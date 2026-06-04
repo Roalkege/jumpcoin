@@ -327,7 +327,10 @@ static bool InterpretBool(const std::string& strValue)
 {
     if (strValue.empty())
         return true;
-    return (atoi(strValue) != 0);
+    int32_t n;
+    if (ParseInt32(strValue, &n))
+        return n != 0;
+    return false;
 }
 
 /** Turn -noX into -X=0 */
@@ -528,8 +531,7 @@ string random(int len)
 {
     string a = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     string r;
-    srand(time(NULL));
-    for(int i = 0; i < len; i++) r.push_back(a.at(size_t(rand() % 62)));
+    for(int i = 0; i < len; i++) r.push_back(a.at(size_t(GetRand(62))));
     return r;
 }
 

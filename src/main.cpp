@@ -2022,7 +2022,7 @@ bool CheckTxInputs(const CTransaction& tx, CValidationState& state, const CCoins
 
         // If prev is coinbase or coinstake, check that it's matured
         if (coins->IsCoinBase() || coins->IsCoinStake()) {
-            if (nSpendHeight - coins->nHeight < (params.IsProtocolV3_1(nTimeTx) ? params.nCoinbaseMaturity : Params().nCoinbaseMaturity))
+            if (nSpendHeight - coins->nHeight < params.nCoinbaseMaturity)
                 return state.Invalid(
                     error("CheckInputs(): tried to spend %s at depth %d", coins->IsCoinBase() ? "coinbase" : "coinstake", nSpendHeight - coins->nHeight),
                     REJECT_INVALID, "bad-txns-premature-spend-of-coinbase");
@@ -5107,10 +5107,14 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
 bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, int64_t nTimeReceived, const CChainParams& chainparams)
 {
     LogPrint("net", "received: %s (%u bytes) peer=%d\n", SanitizeString(strCommand), vRecv.size(), pfrom->id);
-    if (mapArgs.count("-dropmessagestest") && GetRand(atoi(mapArgs["-dropmessagestest"])) == 0)
-    {
-        LogPrintf("dropmessagestest DROPPING RECV MESSAGE\n");
-        return true;
+    if (mapArgs.count("-dropmessagestest")) {
+        int32_t nDrop = 0;
+        ParseInt32(mapArgs["-dropmessagestest"], &nDrop);
+        if (GetRand(nDrop) == 0)
+        {
+            LogPrintf("dropmessagestest DROPPING RECV MESSAGE\n");
+            return true;
+        }
     }
 
 

@@ -14,6 +14,7 @@
 #include "coins.h"
 #include "hash.h"
 #include "main.h"
+#include "script/standard.h"
 #include "uint256.h"
 #include "primitives/transaction.h"
 #include <stdio.h>
@@ -140,7 +141,7 @@ bool CheckProofOfStake(CBlockIndex* pindexPrev, const CTransaction& tx, unsigned
         return state.DoS(100, error("CheckProofOfStake() : coinstake input does not match previous output %s", txin.prevout.hash.GetHex()));
 
     // Verify signature
-    if (!VerifySignature(txPrev, tx, 0, SCRIPT_VERIFY_NONE, 0))
+    if (!VerifySignature(txPrev, tx, 0, MANDATORY_SCRIPT_VERIFY_FLAGS, 0))
        return state.DoS(100, error("CheckProofOfStake() : VerifySignature failed on coinstake %s", tx.GetHash().ToString()));
 
     // Min age requirement
@@ -200,14 +201,11 @@ bool CheckKernel(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t nTime, co
     } else {
         //found in cache
         const CStakeCache& stake = it->second;
-        /*
-        // Jumpcoin ToDo: check and enable this!
         if (CheckStakeKernelHash(pindexPrev, nBits, stake.blockFromTime, stake.amount, prevout, nTime)) {
             // Cache could potentially cause false positive stakes in the event of deep reorgs, so check without cache also
             return CheckKernel(pindexPrev, nBits, nTime, prevout);
         }
-        */
-        return CheckStakeKernelHash(pindexPrev, nBits, stake.blockFromTime, stake.amount, prevout, nTime);
+        return false;
     }
 }
 

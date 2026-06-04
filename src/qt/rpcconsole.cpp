@@ -20,6 +20,7 @@
 #include "rpc/server.h"
 #include "rpc/client.h"
 #include "util.h"
+#include "utilstrencodings.h"
 
 #include <openssl/crypto.h>
 
@@ -180,7 +181,10 @@ bool RPCConsole::RPCExecuteCommandLine(std::string &strResult, const std::string
                                     for(char argch: curarg)
                                         if (!std::isdigit(argch))
                                             throw std::runtime_error("Invalid result query");
-                                    subelement = lastResult[atoi(curarg.c_str())];
+                                    int32_t idx = 0;
+                                    if (!ParseInt32(curarg, &idx))
+                                        throw std::runtime_error("Invalid result query");
+                                    subelement = lastResult[idx];
                                 }
                                 else if (lastResult.isObject())
                                     subelement = find_value(lastResult, curarg);

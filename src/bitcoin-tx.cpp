@@ -229,8 +229,8 @@ static void MutateTxAddInput(CMutableTransaction& tx, const string& strInput)
 
     // extract and validate vout
     string strVout = vStrInputParts[1];
-    int vout = atoi(strVout);
-    if ((vout < 0) || (vout > (int)maxVout))
+    int32_t vout = 0;
+    if (!ParseInt32(strVout, &vout) || (vout < 0) || (vout > (int)maxVout))
         throw runtime_error("invalid TX input vout");
 
     // extract the optional sequence number
@@ -334,8 +334,8 @@ static void MutateTxAddOutScript(CMutableTransaction& tx, const string& strInput
 static void MutateTxDelInput(CMutableTransaction& tx, const string& strInIdx)
 {
     // parse requested deletion index
-    int inIdx = atoi(strInIdx);
-    if (inIdx < 0 || inIdx >= (int)tx.vin.size()) {
+    int32_t inIdx = 0;
+    if (!ParseInt32(strInIdx, &inIdx) || inIdx < 0 || inIdx >= (int)tx.vin.size()) {
         string strErr = "Invalid TX input index '" + strInIdx + "'";
         throw runtime_error(strErr.c_str());
     }
@@ -347,8 +347,8 @@ static void MutateTxDelInput(CMutableTransaction& tx, const string& strInIdx)
 static void MutateTxDelOutput(CMutableTransaction& tx, const string& strOutIdx)
 {
     // parse requested deletion index
-    int outIdx = atoi(strOutIdx);
-    if (outIdx < 0 || outIdx >= (int)tx.vout.size()) {
+    int32_t outIdx = 0;
+    if (!ParseInt32(strOutIdx, &outIdx) || outIdx < 0 || outIdx >= (int)tx.vout.size()) {
         string strErr = "Invalid TX output index '" + strOutIdx + "'";
         throw runtime_error(strErr.c_str());
     }
@@ -465,8 +465,8 @@ static void MutateTxSign(CMutableTransaction& tx, const string& flagStr)
 
             uint256 txid = ParseHashUV(prevOut["txid"], "txid");
 
-            int nOut = atoi(prevOut["vout"].getValStr());
-            if (nOut < 0)
+            int32_t nOut = 0;
+            if (!ParseInt32(prevOut["vout"].getValStr(), &nOut) || nOut < 0)
                 throw runtime_error("vout must be positive");
 
             vector<unsigned char> pkData(ParseHexUV(prevOut["scriptPubKey"], "scriptPubKey"));

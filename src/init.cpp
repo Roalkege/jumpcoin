@@ -633,7 +633,8 @@ void CleanupBlockRevFiles()
     // start removing block files.
     int nContigCounter = 0;
     BOOST_FOREACH(const PAIRTYPE(string, path)& item, mapBlockFiles) {
-        if (atoi(item.first) == nContigCounter) {
+        int32_t nFileIndex = 0;
+        if (ParseInt32(item.first, &nFileIndex) && nFileIndex == nContigCounter) {
             nContigCounter++;
             continue;
         }
@@ -1290,11 +1291,13 @@ bool AppInit2(Config& config, boost::thread_group& threadGroup, CScheduler& sche
         }
     }
 
-    nDonationPercentage = GetArg("-donatetodevfund", DEFAULT_DONATION_PERCENTAGE);
-    if (nDonationPercentage < 0)
+    int nDonation = GetArg("-donatetodevfund", (int)DEFAULT_DONATION_PERCENTAGE);
+    if (nDonation < 0)
         nDonationPercentage = 0;
-    else if (nDonationPercentage > 95)
+    else if (nDonation > 95)
         nDonationPercentage = 95;
+    else
+        nDonationPercentage = (unsigned int)nDonation;
 #endif
 
     BOOST_FOREACH(const std::string& strDest, mapMultiArgs["-seednode"])
