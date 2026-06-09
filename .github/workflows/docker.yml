@@ -18,6 +18,12 @@ jobs:
       packages: write      # push to ghcr.io
     strategy:
       fail-fast: false
+      # Run the standard and tor variants sequentially: both write
+      # into the same registry namespace and a parallel
+      # cache-from/cache-to race can return a half-built /install
+      # directory from the other variant.  5 + 5 = 10 min, but
+      # reliable.
+      max-parallel: 1
       matrix:
         include:
           - variant: standard
