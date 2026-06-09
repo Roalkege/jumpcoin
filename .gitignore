@@ -1,0 +1,8 @@
+# Local build & dev artefacts
+build*.log
+gui-screenshot.png
+peers.dat
+test/screenshots/
+
+# Docker runtime data
+.docker/

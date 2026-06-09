@@ -1,0 +1,74 @@
+# Jumpcoin Qt wallet - all-in-one container
+# Build:  docker compose build
+# Run:    docker compose up -d
+# Web UI: http://localhost:6080/vnc.html
+
+services:
+  jumpcoin-qt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jumpcoin/jumpcoin-qt:latest
+    container_name: jumpcoin-qt
+    restart: unless-stopped
+
+    # The container exposes 4 ports:
+    #   6080  -> noVNC  (open in browser)
+    #   5900  -> raw VNC (e.g. TigerVNC, Remmina, ...)
+    #   31240 -> jumpcoind RPC
+    #   31242 -> jumpcoind P2P
+    ports:
+      - "6080:6080"      # noVNC web UI
+      - "5900:5900"      # VNC
+      - "127.0.0.1:31240:31240"   # RPC bound to host-loopback only
+      - "127.0.0.1:31242:31242"   # P2P  bound to host-loopback only
+
+    # Persist blockchain, wallet, configs across container restarts
+    volumes:
+      - jumpcoin-data:/home/jumpcoin/.jumpcoin
+
+      # Optional: pre-seed a known-good peers.dat so the wallet can
+      # bootstrap on networks where the DNS seeds are down.  Drop the
+      # file next to this compose file as "peers.dat" and uncomment the
+      # line below.  Read-only so the wallet can never overwrite it.
+      #
+      # On Unraid, change "./peers.dat" to the absolute path of your
+      # host file, e.g. "/mnt/user/appdata/jumpcoin/peers.dat".
+      #
+      # - ./peers.dat:/home/jumpcoin/.jumpcoin/peers.dat:ro
+      - ./peers.dat:/home/jumpcoin/.jumpcoin/peers.dat:ro
+
+    # RPC credentials for the embedded jumpcoind
+    environment:
+      RPC_USER: "jumpcoin"
+      RPC_PASSWORD: "jumpcoin"          # CHANGE ME
+      RPC_PORT: "31240"
+      P2P_PORT: "31242"
+      WALLET_RPCALLOWIP: "127.0.0.1"
+      VNC_PORT: "5900"
+      NOVNC_PORT: "6080"
+      DISPLAY_WIDTH: "1280"
+      DISPLAY_HEIGHT: "800"
+      DISPLAY_DEPTH: "24"
+      # VNC_PASSWORD: "set-me-please"  # uncomment + change to enable VNC auth
+      # DAEMON_ARGS: "maxconnections=20 onlynet=ipv4"   # extra jumpcoind args
+
+    # Share memory for Qt's shared memory transport (faster than unix sockets)
+    shm_size: "1g"
+
+    # Reasonable resource limits; tweak to taste
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 4G
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  jumpcoin-data:
+    name: jumpcoin-data

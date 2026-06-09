@@ -1,0 +1,54 @@
+# VCS / IDE
+.git
+.gitignore
+.gitattributes
+.dockerignore
+.idea
+.vscode
+.docker
+
+# Build artefacts (regenerated inside the container)
+**/.libs
+**/*.la
+**/*.lo
+**/*.o
+**/*.obj
+**/*.a
+**/*.so
+**/*.so.*
+**/*.dylib
+**/*.dll
+**/*.exe
+**/*.d
+**/.deps
+**/.dirstamp
+autom4te.cache
+config.log
+config.status
+**/config.status
+**/stamp-h1
+**/Makefile
+**/Makefile.in
+**/obj/
+**/obj-*/
+**/*.qm
+
+# This repo
+Dockerfile
+docker-compose.yml
+
+# Misc
+*.swp
+*.swo
+*~
+*.log
+*.bak
+.DS_Store
+out
+dist
+
+# Local peers.dat (mounted read-only into the container, never commit
+# the binary blob; users should supply their own bootstrap peers.dat)
+peers.dat
+gui-screenshot.png
+
