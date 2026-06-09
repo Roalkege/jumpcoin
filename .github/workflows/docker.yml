@@ -30,6 +30,12 @@ jobs:
             tag_suffix: "-tor"
             cache_tag: buildcache-tor
             description: "Image with bundled Tor daemon"
+    env:
+      # OCI registries require lowercase repository names.  The
+      # GitHub owner may have mixed case (e.g. 'Roalkege'), so we
+      # pin the registry namespace explicitly and lowercase it here
+      # rather than relying on ${{ github.repository_owner }}.
+      REGISTRY_OWNER: roalkege
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,7 +58,7 @@ jobs:
         if: matrix.variant == 'standard'
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/jumpcoin-qt
+          images: ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin-qt
           tags: |
             type=ref,event=tag
             type=semver,pattern={{version}}
@@ -70,7 +76,7 @@ jobs:
         if: matrix.variant == 'tor'
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/jumpcoin-qt
+          images: ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin-qt
           tags: |
             type=ref,event=tag,suffix=-tor
             type=semver,pattern={{version}},suffix=-tor
@@ -90,5 +96,5 @@ jobs:
           labels: ${{ matrix.variant == 'standard' && steps.meta-standard.outputs.labels || steps.meta-tor.outputs.labels }}
           # Per-variant cache tag so the :latest build doesn't poison
           # the :tor cache and vice-versa.
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/jumpcoin-qt:${{ matrix.cache_tag }}
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/jumpcoin-qt:${{ matrix.cache_tag }},mode=max
+          cache-from: type=registry,ref=ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin-qt:${{ matrix.cache_tag }}
+          cache-to: type=registry,ref=ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin-qt:${{ matrix.cache_tag }},mode=max
