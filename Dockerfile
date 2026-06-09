@@ -57,7 +57,7 @@ WORKDIR /src
 # Copy the source tree
 COPY . .
 
-RUN ./autogen.sh \
+RUN /bin/sh ./autogen.sh \
     && ./configure \
         --prefix=/usr/local \
         --with-gui=qt5 \
@@ -69,10 +69,14 @@ RUN ./autogen.sh \
         --disable-fuzz-binary \
     && make -j"$(nproc)" \
     && make install DESTDIR=/install \
+    && test -x /install/usr/local/bin/jumpcoind \
+    && test -x /install/usr/local/bin/jumpcoin-qt \
+    && test -x /install/usr/local/bin/jumpcoin-cli \
+    && test -x /install/usr/local/bin/jumpcoin-tx \
     && strip /install/usr/local/bin/jumpcoind \
              /install/usr/local/bin/jumpcoin-qt \
              /install/usr/local/bin/jumpcoin-cli \
-             /install/usr/local/bin/jumpcoin-tx 2>/dev/null || true
+             /install/usr/local/bin/jumpcoin-tx
 
 # ------------------------------------------------------------------------------
 #  Stage 2: Runtime
@@ -187,22 +191,24 @@ RUN mkdir -p /opt/novnc /opt/websockify \
         | tar -xz -C /opt/websockify --strip-components=1 \
     && ln -sf /opt/websockify/websockify.py /usr/local/bin/websockify \
     && chmod +x /opt/novnc/utils/novnc_proxy \
-    && chmod +x /opt/websockify/websockify.py \
-    # Also install websockify as a Python package so it can be imported
-    # by name (required by noVNC's novnc_proxy)
-    && pip3 install --no-cache-dir --break-system-packages \
-        "websockify>=0.12.0" || true
+    && chmod +x /opt/websockify/websockify.py
 
-# Copy binaries from the build stage.  We use a tar-pipe to bypass
-# BuildKit's content-cache, which can otherwise keep stale snapshots
-# from a previous (failed) build.
+# Copy binaries from the build stage.
 COPY --from=builder /install /install
 RUN mkdir -p /usr/local/bin \
-    && find /install/usr/local/bin -maxdepth 1 -type f -exec cp -a {} /usr/local/bin/ \; \
-    && find /install/usr/local/lib -maxdepth 1 \( -name 'libbitcoinconsensus*' -o -name 'libunivalue*' \) -exec cp -an {} /usr/local/lib/ \; 2>/dev/null || true \
+    && cp -a /install/usr/local/bin/jumpcoind \
+             /install/usr/local/bin/jumpcoin-qt \
+             /install/usr/local/bin/jumpcoin-cli \
+             /install/usr/local/bin/jumpcoin-tx \
+             /usr/local/bin/ \
+    && if [ -d /install/usr/local/lib ]; then \
+        find /install/usr/local/lib -maxdepth 1 \
+            \( -name 'libbitcoinconsensus*' -o -name 'libunivalue*' \) \
+            -exec cp -an {} /usr/local/lib/ \; ; \
+       fi \
     && rm -rf /install \
-    && /usr/local/bin/jumpcoind --version 2>&1 | head -1 \
-    && /usr/local/bin/jumpcoin-qt --version 2>&1 | head -1
+    && /usr/local/bin/jumpcoind --version >/dev/null \
+    && QT_QPA_PLATFORM=offscreen /usr/local/bin/jumpcoin-qt --version >/dev/null
 
 # Container layout
 RUN groupadd -g 1000 jumpcoin \

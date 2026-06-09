@@ -18,10 +18,7 @@ jobs:
       packages: write      # push to ghcr.io
     strategy:
       fail-fast: false
-      # Build the two variants sequentially.  Without a cache the
-      # builder stage produces an /install directory on each run,
-      # and the multi-stage COPY in the runtime stage reads it.
-      # Concurrent runs would race on the buildkit content store.
+      # Keep resource-heavy image builds sequential on hosted runners.
       max-parallel: 1
       matrix:
         include:
@@ -99,13 +96,3 @@ jobs:
           build-args: WITH_TOR=${{ matrix.with_tor }}
           tags: ${{ matrix.variant == 'standard' && steps.meta-standard.outputs.tags || steps.meta-tor.outputs.tags }}
           labels: ${{ matrix.variant == 'standard' && steps.meta-standard.outputs.labels || steps.meta-tor.outputs.labels }}
-          # No cache-from / cache-to.  The registry-cache feature of
-          # build-push-action@v6 interacts badly with multi-stage
-          # Dockerfiles that COPY --from=builder: the first run
-          # yields "failed to calculate checksum of ref ... /install:
-          # not found" because BuildKit tries to read the (empty)
-          # cache's builder stage output.  Disabling the cache costs
-          # ~3-4 min on the first build of every tag, but it
-          # actually succeeds.  We can revisit layered caching once
-          # the image is published and we have a real base to cache
-          # against.
