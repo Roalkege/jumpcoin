@@ -148,5 +148,14 @@ fi
 # -----------------------------------------------------------------------
 # 4. Hand off to supervisord (which will drop to jumpcoin via `user=jumpcoin`)
 # -----------------------------------------------------------------------
+
+# In the :latest image the debian-tor user does not exist (tor is not
+# installed).  Supervisord validates user= at startup and aborts if the
+# user is missing, even when the program block is a no-op.  Patch the
+# conf in-place so both variants share one file.
+if ! id debian-tor >/dev/null 2>&1; then
+    sed -i 's/^user=debian-tor$/user=root/' "${SUPERVISORD_CONF}"
+fi
+
 log "Starting supervisord"
 exec supervisord -c "${SUPERVISORD_CONF}" -n

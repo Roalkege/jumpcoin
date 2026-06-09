@@ -8,6 +8,8 @@
 # ==============================================================================
 
 ARG UBUNTU_VERSION=22.04
+ARG BDB_VERSION=6.2.32
+ARG BDB_PREFIX=/opt/bdb
 
 # ------------------------------------------------------------------------------
 #  Stage 1: Build
@@ -15,6 +17,8 @@ ARG UBUNTU_VERSION=22.04
 FROM ubuntu:${UBUNTU_VERSION} AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
+ARG BDB_VERSION
+ARG BDB_PREFIX
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
@@ -39,19 +43,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         protobuf-compiler \
         libminiupnpc-dev \
         libzmq3-dev \
-        libdb++-dev \
-        libdb-dev \
         qtbase5-dev \
         qttools5-dev \
         qttools5-dev-tools \
         libqt5svg5-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Use the system BDB 5.3 (--with-incompatible-bdb).  BDB 4.8 cannot be
-# built with the gcc 11+ shipped in Ubuntu 22.04 (atomic.h conflict on
-# __atomic_compare_exchange).  The wallet.dat format used with the
-# incompatible flag is the format that every modern Bitcoin-derived
-# wallet speaks, so this is the pragmatic choice.
+# Build Berkeley DB 6.2.32 statically — same version used by the official
+# wallet binary, ensuring wallet.dat compatibility.
+RUN curl -fsSL "https://download.oracle.com/berkeley-db/db-${BDB_VERSION}.tar.gz" \
+        | tar -xz -C /tmp \
+    && cd "/tmp/db-${BDB_VERSION}/build_unix" \
+    && CXXFLAGS="-std=c++17" ../dist/configure \
+        --prefix="${BDB_PREFIX}" \
+        --enable-cxx \
+        --disable-shared \
+        --disable-replication \
+    && make -j"$(nproc)" \
+    && make install \
+    && rm -rf "/tmp/db-${BDB_VERSION}"
+
 WORKDIR /src
 
 # Copy the source tree
@@ -68,6 +79,8 @@ RUN chmod +x ./share/genbuild.sh \
         --disable-hardening \
         --disable-fuzz \
         --disable-fuzz-binary \
+        BDB_LIBS="-L${BDB_PREFIX}/lib -ldb_cxx-6.2" \
+        BDB_CFLAGS="-I${BDB_PREFIX}/include" \
     && make -j"$(nproc)" \
     && make install DESTDIR=/install \
     && test -x /install/usr/local/bin/jumpcoind \
@@ -153,7 +166,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libevent-2.1-7 \
         libevent-pthreads-2.1-7 \
         libssl3 \
-        libdb5.3++ \
         libboost-system1.74.0 \
         libboost-filesystem1.74.0 \
         libboost-thread1.74.0 \
