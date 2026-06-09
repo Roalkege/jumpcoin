@@ -16,6 +16,21 @@ Nothing yet.
 
 ---
 
+## [1.0.5] - 2026-06-09
+
+### Fixed
+
+- **`x0vncserver` aborted with "unrecognized option"** (`docker/supervisord.conf`):
+  the `-permitclipboard` flag that was added in v1.0.4 is only valid for
+  `vncserver(1)` (display-creation mode), **not** for `x0vncserver`, which
+  attaches to an already-running X display.  The flag made `x0vncserver`
+  exit immediately, taking the VNC port down with it and breaking noVNC
+  connectivity.  `-permitclipboard` has been removed; `-SendCutText`,
+  `-AcceptCutText`, and `-SetPrimary` remain in place because those are
+  valid `x0vncserver` options that actually enable clipboard relay.
+
+---
+
 ## [1.0.2] - 2026-06-09
 
 ### Changed
@@ -195,9 +210,12 @@ exist here only for reference.
 
 ---
 
-[Unreleased]: https://github.com/Roalkege/jumpcoin/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/Roalkege/jumpcoin/compare/v1.0.5...HEAD
 [1.0.0]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.0
 [1.0.1]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.1
 [1.0.2]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.2
+[1.0.3]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.3
+[1.0.4]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.4
+[1.0.5]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.5
 [Unreleased URL placeholder]: #
 [Historical URL placeholder]: #
