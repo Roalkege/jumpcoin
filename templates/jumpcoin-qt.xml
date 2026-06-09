@@ -34,6 +34,14 @@
     Path you configure below.  See the README for offline-backup
     instructions - the wallet.dat is the only authoritative copy of
     your coins.
+
+    Two image variants are published:
+      * :latest  - standard, no Tor.
+      * :v1.0.0-tor  (or :tor alias on a tagged release) - bundles a
+        Tor daemon.  Set 'Extra Daemon Args' below to one of:
+          -proxy=127.0.0.1:9050                  (clearnet + onion)
+          -proxy=127.0.0.1:9050 -onlynet=onion   (onion only)
+          -noonion                                (ignore bundled tor)
   </Description>
 
   <!-- GitHub issues is the support channel. -->
@@ -82,7 +90,7 @@
   <Config Name="RPC Allow IP"     Target="WALLET_RPCALLOWIP" Default="0.0.0.0/0"            Description="CIDR range allowed to call the JSON-RPC.  Use 127.0.0.1 if you only call it from inside this container." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
   <!-- ===== Daemon extras ===== -->
-  <Config Name="Extra Daemon Args" Target="DAEMON_ARGS"     Default=""                      Description="Extra jumpcoin.conf lines, e.g. 'maxconnections=20 onlynet=ipv4'." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Extra Daemon Args" Target="DAEMON_ARGS"     Default=""                      Description="Extra jumpcoin.conf lines, e.g. 'maxconnections=20 onlynet=ipv4'.  For the :tor image variant use '-proxy=127.0.0.1:9050' (clearnet+onion), '-proxy=127.0.0.1:9050 -onlynet=onion' (onion only), or '-noonion' (ignore bundled tor)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
   <!-- ===== Resource limits ===== -->
   <!--

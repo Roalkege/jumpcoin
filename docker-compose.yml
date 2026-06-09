@@ -55,6 +55,12 @@ services:
       DISPLAY_DEPTH: "24"
       # VNC_PASSWORD: "set-me-please"  # uncomment + change to enable VNC auth
       # DAEMON_ARGS: "maxconnections=20 onlynet=ipv4"   # extra jumpcoind args
+      #
+      # Tor support (only useful with the :tor image variant, which
+      # bundles a Tor daemon listening on 127.0.0.1:9050):
+      #   DAEMON_ARGS: "-proxy=127.0.0.1:9050"                          # clearnet + onion
+      #   DAEMON_ARGS: "-proxy=127.0.0.1:9050 -onlynet=onion"           # onion only
+      #   DAEMON_ARGS: "-noonion"                                       # ignore bundled tor
 
     # Share memory for Qt's shared memory transport (faster than unix sockets)
     shm_size: "1g"

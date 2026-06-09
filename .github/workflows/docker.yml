@@ -16,6 +16,20 @@ jobs:
     permissions:
       contents: read       # checkout
       packages: write      # push to ghcr.io
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            with_tor: "false"
+            tag_suffix: ""
+            cache_tag: buildcache
+            description: "Standard image (no Tor)"
+          - variant: tor
+            with_tor: "true"
+            tag_suffix: "-tor"
+            cache_tag: buildcache-tor
+            description: "Image with bundled Tor daemon"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,8 +47,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
+      - name: Extract metadata (standard tag set)
+        id: meta-standard
+        if: matrix.variant == 'standard'
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository_owner }}/jumpcoin-qt
@@ -45,17 +60,35 @@ jobs:
             type=semver,pattern={{major}}
             type=sha,format=short
 
-      - name: Build and push
+      # For the Tor variant we rewrite the generated tag set so that
+      # every tag gets a "-tor" suffix (e.g. v1.0.0 -> v1.0.0-tor,
+      # v1.0 -> v1.0-tor, 1.0.0-shaabc -> 1.0.0-shaabc-tor).  We also
+      # add a single stable "tor" alias for the latest semver tag
+      # so users can pin a major/minor without the SHA.
+      - name: Extract metadata (tor tag set)
+        id: meta-tor
+        if: matrix.variant == 'tor'
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/jumpcoin-qt
+          tags: |
+            type=ref,event=tag,suffix=-tor
+            type=semver,pattern={{version}},suffix=-tor
+            type=semver,pattern={{major}}.{{minor}},suffix=-tor
+            type=semver,pattern={{major}},suffix=-tor
+            type=sha,format=short,suffix=-tor
+
+      - name: Build and push (${{ matrix.description }})
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          # Cache from/to a dedicated tag in the same registry.  First
-          # build is uncached, subsequent builds reuse the previous
-          # image's layers (saves ~3-4 min on this heavy build).
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/jumpcoin-qt:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/jumpcoin-qt:buildcache,mode=max
+          build-args: WITH_TOR=${{ matrix.with_tor }}
+          tags: ${{ matrix.variant == 'standard' && steps.meta-standard.outputs.tags || steps.meta-tor.outputs.tags }}
+          labels: ${{ matrix.variant == 'standard' && steps.meta-standard.outputs.labels || steps.meta-tor.outputs.labels }}
+          # Per-variant cache tag so the :latest build doesn't poison
+          # the :tor cache and vice-versa.
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/jumpcoin-qt:${{ matrix.cache_tag }}
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/jumpcoin-qt:${{ matrix.cache_tag }},mode=max

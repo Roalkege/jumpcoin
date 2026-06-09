@@ -82,6 +82,14 @@ FROM ubuntu:${UBUNTU_VERSION} AS runtime
 ARG DEBIAN_FRONTEND=noninteractive
 ARG NOVNC_VERSION=1.5.0
 ARG WEBSOCKIFY_VERSION=0.12.0
+# WITH_TOR=true bundles the Tor daemon into the image and starts it
+# under supervisord.  The wallet then reaches onion peers through the
+# bundled SOCKS5 proxy at 127.0.0.1:9050.  Combined with the
+# DAEMON_ARGS env var the user can choose:
+#   -proxy=127.0.0.1:9050                  (clearnet + onion, default)
+#   -proxy=127.0.0.1:9050 -onlynet=onion   (onion-only)
+#   -noonion                                (ignore the bundled tor)
+ARG WITH_TOR=false
 
 ENV HOME=/home/jumpcoin \
     DISPLAY=:99 \
@@ -96,7 +104,9 @@ ENV HOME=/home/jumpcoin \
     P2P_PORT=31242 \
     WALLET_RPCALLOWIP=0.0.0.0/0 \
     VNC_SECURITY_TYPES=VncAuth \
-    DAEMON_ARGS=
+    DAEMON_ARGS= \
+    TOR_SOCKS_PORT=9050 \
+    TOR_CONTROL_PORT=9051
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -160,6 +170,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         imagemagick \
     && rm -rf /var/lib/apt/lists/*
 
+# Optional Tor daemon.  Only installed when the image is built with
+# WITH_TOR=true (e.g. the :tor tag); the :latest tag stays slim.
+RUN if [ "$WITH_TOR" = "true" ]; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            tor \
+            torsocks \
+        && rm -rf /var/lib/apt/lists/* ; \
+    fi
+
 # noVNC + websockify
 RUN mkdir -p /opt/novnc /opt/websockify \
     && curl -fsSL "https://github.com/novnc/noVNC/archive/v${NOVNC_VERSION}.tar.gz" \
@@ -195,6 +214,19 @@ COPY docker/entrypoint.sh    /usr/local/bin/entrypoint.sh
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 COPY docker/menu.xml         /etc/xdg/openbox/menu.xml
 COPY docker/launch-jumpcoin-qt.sh /usr/local/bin/launch-jumpcoin-qt
+
+# Tor config is only relevant in the :tor variant; the file is still
+# copied unconditionally so the runtime image is identical between
+# variants except for the WITH_TOR-built-in dependency.
+COPY docker/torrc            /etc/tor/torrc
+
+# /var/lib/tor is the Tor data dir (DataDirectory in torrc).  Owner
+# is the debian-tor user created by the tor package; tor refuses to
+# start if it can't write here.
+RUN if [ "$WITH_TOR" = "true" ]; then \
+        mkdir -p /var/lib/tor /var/log/tor \
+        && chown -R debian-tor:debian-tor /var/lib/tor /var/log/tor ; \
+    fi
 
 RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/launch-jumpcoin-qt
 

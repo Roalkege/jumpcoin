@@ -1,0 +1,21 @@
+# Tor configuration for the Jumpcoin wallet container.
+#
+# This file is only used in the WITH_TOR=true image variant (the
+# :tor tag).  Supervisord starts /usr/bin/tor with this config.
+#
+# Listening on 127.0.0.1 keeps the proxy inside the container; the
+# wallet reaches it at SOCKS5://127.0.0.1:9050.
+#
+# We do NOT set "User" here because supervisord itself runs as the
+# unprivileged jumpcoin user (see docker/entrypoint.sh and
+# supervisord.conf).  Instead, supervisord's [program:tor] block
+# sets user=debian-tor so tor drops to that account at start.
+
+SocksPort 127.0.0.1:9050 IsolateClientProtocol IsolateClientAddr
+ControlPort 127.0.0.1:9051
+CookieAuthentication 1
+DataDirectory /var/lib/tor
+
+# Avoid log noise on stdout (we already have supervisor capturing
+# the process); uncomment for debugging.
+# Log notice stdout
