@@ -32,7 +32,7 @@ Comment=Start or restart the Jumpcoin Qt wallet
 Exec=/usr/local/bin/launch-jumpcoin-qt
 Icon=bitcoin
 Terminal=false
-Categories=Office;Finance;
+Categories=Office;Finance;Network;
 EOF
 chmod +x /home/jumpcoin/Desktop/jumpcoin-qt.desktop
 chown jumpcoin:jumpcoin /home/jumpcoin/Desktop/jumpcoin-qt.desktop

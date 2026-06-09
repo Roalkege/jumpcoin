@@ -26,7 +26,7 @@ Data (blockchain, wallet, config) is persisted under the Appdata Path you config
 
   <TemplateURL>https://raw.githubusercontent.com/roalkege/jumpcoin/main/templates/jumpcoin-qt.xml</TemplateURL>
 
-  <Category>Finance:Crypto</Category>
+  <Category>Crypto: Tools: Productivity:</Category>
   <ExtraSearchTerms>jumpcoin jump coin wallet crypto staking pos qt</ExtraSearchTerms>
 
   <Requires>Docker with /dev/shm support.  Image builds are pushed to ghcr.io on every v* tag.</Requires>
