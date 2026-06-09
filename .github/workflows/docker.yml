@@ -18,6 +18,11 @@ jobs:
       packages: write      # push to ghcr.io
     strategy:
       fail-fast: false
+      # Build the two variants sequentially.  Without a cache the
+      # builder stage produces an /install directory on each run,
+      # and the multi-stage COPY in the runtime stage reads it.
+      # Concurrent runs would race on the buildkit content store.
+      max-parallel: 1
       matrix:
         include:
           - variant: standard
