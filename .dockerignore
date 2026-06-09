@@ -52,3 +52,6 @@ dist
 peers.dat
 gui-screenshot.png
 
+# Local wallet/blockchain data (host bind mount, not part of the image)
+data/
+

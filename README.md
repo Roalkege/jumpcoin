@@ -1,7 +1,44 @@
 # jumpcoin
 Community Cryptocurrency from Jumperbillijumper on YouTube
 
-Technical specifications
+## Disclaimer
+
+USE AT YOUR OWN RISK.  This is an unofficial, community-maintained
+container image for a community cryptocurrency.  The authors and
+contributors of this repository:
+
+- Are **not** the original Jumpcoin developers, maintainers, or
+  representatives of the Jumpcoin project, the Jumperbillijumper
+  YouTube channel, or any associated entity.
+- Provide this software **as-is, with no warranty of any kind**,
+  express or implied, including but not limited to warranties of
+  merchantability, fitness for a particular purpose, or
+  non-infringement.
+- Accept **no responsibility or liability** for any loss, damage, or
+  inconvenience arising from your use of this image, including but
+  not limited to:
+  - Loss of coins, wallet contents, or private keys (e.g. through
+    misconfiguration, data loss, container removal, or bugs).
+  - Software defects, security vulnerabilities, or data corruption
+    in the wallet or the container.
+  - Network or consensus issues in the Jumpcoin blockchain, including
+    double-spends, chain stalls, or 51% attacks.
+  - Damage to your host system, data, or other containers.
+- Make **no guarantees** about the ongoing availability, security, or
+  correctness of the published image or the underlying blockchain.
+
+You are solely responsible for:
+
+- Backing up your `wallet.dat` (and any other wallet files) to a
+  secure offline location.
+- Securing your RPC credentials, VNC password, and any host ports you
+  expose.
+- Keeping the image and your host system up to date.
+- Understanding what the `jumpcoin.conf` options you set actually do.
+
+If you do not accept these conditions, do not use this image.
+
+## Technical specifications
 
 - Coin Name: Jumpcoin
 
@@ -36,6 +73,20 @@ docker compose up -d
 Open <http://localhost:6080/vnc.html> for the Qt wallet.  See
 `docker/README.md` for environment variables, ports, and the optional
 `peers.dat` mount.
+
+#### Where is the data?
+
+The blockchain, wallet, and config are persisted to **`./data/.jumpcoin`**
+on the host (host bind mount, not an anonymous docker volume).  This
+means:
+
+- `docker compose down` keeps the data.
+- `docker compose down -v` is no longer needed (there is no anonymous
+  volume to delete) and won't touch the data.
+- Backups are plain `tar`/`rsync` of that directory — see the
+  *Disclaimer* above about why you must keep an offline copy of
+  `wallet.dat` at all times.
+- To wipe everything and resync from scratch: `rm -rf ./data`.
 
 ### Pull a pre-built image
 

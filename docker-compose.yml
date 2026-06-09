@@ -23,9 +23,12 @@ services:
       - "127.0.0.1:31240:31240"   # RPC bound to host-loopback only
       - "127.0.0.1:31242:31242"   # P2P  bound to host-loopback only
 
-    # Persist blockchain, wallet, configs across container restarts
+    # Persist blockchain, wallet, configs across container restarts.
+    # Bound to a host directory (./data/.jumpcoin) so the data lives
+    # in plain files you can back up with tar/rsync/rsnapshot, not
+    # inside an anonymous docker volume.
     volumes:
-      - jumpcoin-data:/home/jumpcoin/.jumpcoin
+      - ./data/.jumpcoin:/home/jumpcoin/.jumpcoin
 
       # Optional: pre-seed a known-good peers.dat so the wallet can
       # bootstrap on networks where the DNS seeds are down.  Drop the
@@ -68,7 +71,3 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-
-volumes:
-  jumpcoin-data:
-    name: jumpcoin-data
