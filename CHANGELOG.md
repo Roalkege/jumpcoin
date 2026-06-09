@@ -15,6 +15,49 @@ Nothing yet.
 
 ---
 
+## [1.0.1] - 2026-06-09
+
+Patch release that ships the bugfixes which accumulated between
+the v1.0.0 tag and the first successful GHCR image build.  No
+API / image-contract changes: the standard and Tor tags still
+behave the same to the user.
+
+### Fixed
+
+- **`DAEMON_ARGS` appended on every restart** (`docker/entrypoint.sh`): the
+  block now runs only once per data directory.  Subsequent container restarts
+  log a warning instead of silently growing `jumpcoin.conf` with duplicate
+  entries.
+- **`DAEMON_ARGS` dash-syntax in conf file** (`docker/entrypoint.sh`): leading
+  dashes are stripped and each option is written on its own line, so
+  `-proxy=127.0.0.1:9050 -onlynet=onion` is correctly expanded to two
+  separate `key=value` lines that the Bitcoin-style config parser understands.
+- **Default-credential warning** (`docker/entrypoint.sh`): the entrypoint now
+  logs a prominent warning when `RPC_USER`/`RPC_PASSWORD` are left at the
+  default `jumpcoin`/`jumpcoin` placeholders.
+- **Tor supervisord restart loop** (`docker/supervisord.conf`): the `tor`
+  program block now uses `autorestart=unexpected` + `exitcodes=0` so that
+  the standard (non-Tor) image no longer spins through 10 failed restart
+  attempts on startup when `/usr/bin/tor` is absent.
+- **Untracked `nohup` child in desktop launcher** (`docker/launch-jumpcoin-qt.sh`):
+  the script now delegates to `supervisorctl start/restart` via the Unix
+  socket instead of spawning an untracked `nohup` process outside the
+  supervision tree.  Added `set -euo pipefail`.
+- **Stale supervisord comments** (`docker/supervisord.conf`): corrected the
+  claim that supervisord runs as the `jumpcoin` user (it runs as root so it
+  can `setuid` to `debian-tor`); updated the priority table to match actual
+  values (pcmanfm=25, tor=40, jumpcoin-qt=50; removed the non-existent
+  jumpcoind entry).
+
+### Changed
+
+- **CI build cache** (`.github/workflows/docker.yml`): switched from a
+  registry-backed cache (which caused BuildKit hangs on the first run) to
+  GitHub Actions layer cache (`type=gha`, scoped per variant).  Added
+  `actions: write` permission to the workflow job.
+
+---
+
 ## [1.0.0] - 2026-06-09
 
 First tagged release of the all-in-one Docker image.  Published to
@@ -116,7 +159,8 @@ exist here only for reference.
 
 ---
 
-[Unreleased]: https://github.com/roalkege/jumpcoin-qt/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/roalkege/jumpcoin-qt/compare/v1.0.1...HEAD
 [1.0.0]: https://github.com/roalkege/jumpcoin-qt/releases/tag/v1.0.0
+[1.0.1]: https://github.com/roalkege/jumpcoin-qt/releases/tag/v1.0.1
 [Unreleased URL placeholder]: #
 [Historical URL placeholder]: #
