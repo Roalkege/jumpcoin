@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>Jumpcoin</title>
+  <defs>
+    <linearGradient id="coin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f7931a"/>
+      <stop offset="100%" stop-color="#e8842f"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="url(#coin)" stroke="#c46f1a" stroke-width="2"/>
+  <text x="32" y="44" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="bold" font-size="38" fill="#ffffff">J</text>
+  <path d="M 32 8 L 32 14 M 32 50 L 32 56" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

@@ -115,9 +115,21 @@ the registry under the `buildcache` tag so subsequent builds reuse
 
 ## Unraid
 
-These instructions assume Unraid 6.11+ with the `docker` tab enabled.
-The image is pulled from GHCR; you don't need to build anything on the
-server.
+### Install via Community Applications
+
+Once this repository has been submitted and approved, the app shows
+up in the Unraid Community Applications store under
+**Finance → Crypto**.  Look for **Jumpcoin-Qt**.
+
+The template is generated from
+[`templates/jumpcoin-qt.xml`](templates/jumpcoin-qt.xml) in this
+repository; the Community Apps pipeline reads it on every release.
+
+### Manual install on Unraid
+
+If you'd rather not wait for CA approval, the image can be set up by
+hand on Unraid 6.11+ with the `docker` tab enabled.  The image is
+pulled from GHCR; you don't need to build anything on the server.
 
 ### 1. Create the appdata folder
 
