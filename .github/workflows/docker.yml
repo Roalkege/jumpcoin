@@ -18,12 +18,6 @@ jobs:
       packages: write      # push to ghcr.io
     strategy:
       fail-fast: false
-      # Run the standard and tor variants sequentially: both write
-      # into the same registry namespace and a parallel
-      # cache-from/cache-to race can return a half-built /install
-      # directory from the other variant.  5 + 5 = 10 min, but
-      # reliable.
-      max-parallel: 1
       matrix:
         include:
           - variant: standard
@@ -90,6 +84,25 @@ jobs:
             type=semver,pattern={{major}},suffix=-tor
             type=sha,format=short,suffix=-tor
 
+      - name: Probe for existing build cache
+        id: cache-probe
+        # Skip cache-from on the first run (when the cache manifest
+        # doesn't exist yet) - referencing a missing cache makes
+        # BuildKit return a misleading "/install: not found" error
+        # when the builder stage is later asked to read it.
+        run: |
+          if gh api -H "Accept: application/vnd.github+json" \
+              /users/${{ env.REGISTRY_OWNER }}/packages/container/jumpcoin-qt/versions 2>/dev/null \
+              | jq -e --arg tag "${{ matrix.cache_tag }}" \
+                  '.[] | select(.metadata.container.tags[]? == $tag)' \
+              >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and push (${{ matrix.description }})
         uses: docker/build-push-action@v6
         with:
@@ -100,7 +113,9 @@ jobs:
           build-args: WITH_TOR=${{ matrix.with_tor }}
           tags: ${{ matrix.variant == 'standard' && steps.meta-standard.outputs.tags || steps.meta-tor.outputs.tags }}
           labels: ${{ matrix.variant == 'standard' && steps.meta-standard.outputs.labels || steps.meta-tor.outputs.labels }}
-          # Per-variant cache tag so the :latest build doesn't poison
-          # the :tor cache and vice-versa.
-          cache-from: type=registry,ref=ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin-qt:${{ matrix.cache_tag }}
+          # Per-variant registry cache.  Only attach cache-from when
+          # the manifest already exists in the registry - the
+          # missing-cache case is handled by the probe above so we
+          # never ask BuildKit to read a non-existent builder stage.
+          cache-from: ${{ steps.cache-probe.outputs.exists == 'true' && format('type=registry,ref=ghcr.io/{0}/jumpcoin-qt:{1}', env.REGISTRY_OWNER, matrix.cache_tag) || '' }}
           cache-to: type=registry,ref=ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin-qt:${{ matrix.cache_tag }},mode=max
