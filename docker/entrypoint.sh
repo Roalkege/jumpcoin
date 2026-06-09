@@ -74,6 +74,21 @@ else
     fi
 fi
 
+# Auto-configure Tor proxy for the :tor image variant.
+# If /usr/bin/tor is present but the user hasn't set a proxy or noonion
+# override via DAEMON_ARGS, add proxy=127.0.0.1:9050 (clearnet+onion).
+if [[ -x /usr/bin/tor ]]; then
+    _tor_override=false
+    for _arg in ${DAEMON_ARGS:-}; do
+        case "${_arg#-}" in proxy=*|noonion*) _tor_override=true; break ;; esac
+    done
+    if [[ "${_tor_override}" == "false" ]] && ! grep -q '^proxy=' "${CONF_FILE}" 2>/dev/null; then
+        log "Tor variant detected: adding proxy=127.0.0.1:9050 (clearnet+onion). Use DAEMON_ARGS=-onlynet=onion for onion-only, or -noonion to disable."
+        printf '\nproxy=127.0.0.1:9050\n' >> "${CONF_FILE}"
+        chown jumpcoin:jumpcoin "${CONF_FILE}"
+    fi
+fi
+
 # Clean up stale wallet lock from a previous (unclean) shutdown
 LOCK_FILE="${DATA_DIR}/.lock"
 if [[ -f "${LOCK_FILE}" ]]; then

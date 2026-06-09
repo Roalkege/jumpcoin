@@ -11,7 +11,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Automatic Tor proxy for `:tor` image** (`docker/entrypoint.sh`): the
+  entrypoint now detects whether `/usr/bin/tor` is present and automatically
+  writes `proxy=127.0.0.1:9050` into `jumpcoin.conf` on first start, enabling
+  clearnet+onion routing without any `DAEMON_ARGS`.  Users can override with
+  `-onlynet=onion` (onion only) or `-noonion` (disable Tor).
+
+### Fixed
+
+- **`/dev/shm` Config entry in CA template** (`templates/jumpcoin-qt.xml`):
+  the broken `Type="Variable" Target="/dev/shm"` entry (which set an env var
+  named `/dev/shm` rather than actually sizing shared memory) has been replaced
+  with `<ExtraParams>--shm-size=256m</ExtraParams>`.
+- **peers.dat default host path** (`templates/jumpcoin-qt.xml`): corrected
+  from `/mnt/user/appdata/jumpcoin/peers.dat` to
+  `/mnt/user/appdata/jumpcoin/.jumpcoin/peers.dat` to be consistent with the
+  Appdata Path mount.
+- **`RPC Allow IP` default** (`templates/jumpcoin-qt.xml`): changed from
+  `0.0.0.0/0` (world-open) to `127.0.0.1/32` (localhost only).
+
+### Changed
+
+- **CA template simplified** (`templates/jumpcoin-qt.xml`): removed the
+  `peers.dat Path`, `Display Width/Height/Depth`, and `RPC Username` Config
+  entries to reduce UI clutter.  Display settings use image defaults; RPC
+  username is fixed to `jumpcoin`.  `RPC Port` and `P2P Port` are now
+  `Required="false"`.  `VNC Password` moved to `Display="always"` since it is
+  security-relevant.
 
 ---
 
@@ -87,9 +115,7 @@ image variant.
   per-variant `buildcache` tag in the registry to cut rebuild time
   from ~5 min to ~2 min.
 - **Unraid Community Applications support**:
-  `ca_profile.xml`, `templates/jumpcoin-qt.xml` with 15 Config
-  entries (4 ports, 2 paths, 3 display options, 4 credential/permission
-  vars, daemon args, /dev/shm).  Category: Finance:Crypto.
+  `ca_profile.xml`, `templates/jumpcoin-qt.xml`.  Category: Finance:Crypto.
 - **Official Jumpcoin wallet logo** as `icon.png` (256x256, RGBA,
   the teal "J" from `src/qt/res/icons/bitcoin.png`).
 - **Host bind mount** for persistence (`./data/.jumpcoin`) instead of
@@ -105,10 +131,8 @@ image variant.
     pre-installed.
   - Bundled Tor runs under supervisord, listening on SOCKS5
     `127.0.0.1:9050` and control `127.0.0.1:9051`.
-  - User picks the network policy via `DAEMON_ARGS`:
-    - `-proxy=127.0.0.1:9050` (clearnet + onion)
-    - `-proxy=127.0.0.1:9050 -onlynet=onion` (onion only)
-    - `-noonion` (ignore bundled tor)
+  - Clearnet+onion is the default; user can override via `DAEMON_ARGS`:
+    `-onlynet=onion` (onion only) or `-noonion` (ignore bundled tor).
 
 ### Fixed
 

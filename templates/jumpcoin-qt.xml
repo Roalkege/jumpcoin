@@ -9,94 +9,44 @@
 
   <Icon>https://raw.githubusercontent.com/roalkege/jumpcoin-qt/main/icon.png</Icon>
 
-  <!-- Default URL opens the noVNC web client. -->
   <WebUI>http://[IP]:[PORT:6080]/vnc.html</WebUI>
 
-  <Overview>
-    Unofficial community-maintained Docker container for the Jumpcoin Qt
-    wallet.  Runs the wallet in a headless X server and exposes the GUI
-    through noVNC in any modern browser - no display server, no VNC
-    client required.
-  </Overview>
+  <Overview>Unofficial community-maintained Docker container for the Jumpcoin Qt wallet. Runs the wallet in a headless X server and exposes the GUI through noVNC in any modern browser - no display server or VNC client required.</Overview>
 
-  <Description>
-    USE AT YOUR OWN RISK.  This is an unofficial, community-maintained
-    container, not affiliated with the original Jumpcoin developers or
-    the Jumperbillijumper YouTube channel.
+  <Description>USE AT YOUR OWN RISK. This is an unofficial, community-maintained container, not affiliated with the original Jumpcoin developers or the Jumperbillijumper YouTube channel.[br][br]
+The image runs jumpcoin-qt under a virtual framebuffer (Xvfb) with Openbox, exposes it through TigerVNC and a noVNC web bridge, and also runs the embedded full node (RPC available on port 31240). A desktop shortcut inside the VNC session lets you re-launch the wallet if it ever crashes.[br][br]
+Data (blockchain, wallet, config) is persisted under the Appdata Path you configure below. See the README for offline-backup instructions - the wallet.dat is the only authoritative copy of your coins.[br][br]
+[b]Image variants:[/b][br]
+- :latest - standard, no Tor.[br]
+- :tor - bundles a Tor daemon and routes traffic through it automatically (clearnet+onion). Override via Extra Daemon Args: -onlynet=onion (onion only) or -noonion (disable Tor).</Description>
 
-    The image runs jumpcoin-qt under a virtual framebuffer (Xvfb) with
-    Openbox, exposes it through TigerVNC and a noVNC web bridge, and
-    also runs the embedded full node (RPC available on port 31240).
-    A desktop shortcut inside the VNC session lets you re-launch the
-    wallet if it ever crashes.
-
-    Data (blockchain, wallet, config) is persisted under the Appdata
-    Path you configure below.  See the README for offline-backup
-    instructions - the wallet.dat is the only authoritative copy of
-    your coins.
-
-    Two image variants are published:
-      * :latest  - standard, no Tor.
-      * :v1.0.0-tor  (or :tor alias on a tagged release) - bundles a
-        Tor daemon.  Set 'Extra Daemon Args' below to one of:
-          -proxy=127.0.0.1:9050                  (clearnet + onion)
-          -proxy=127.0.0.1:9050 -onlynet=onion   (onion only)
-          -noonion                                (ignore bundled tor)
-  </Description>
-
-  <!-- GitHub issues is the support channel. -->
   <Support>https://github.com/roalkege/jumpcoin-qt/issues</Support>
 
   <Project>https://github.com/roalkege/jumpcoin-qt</Project>
 
   <TemplateURL>https://raw.githubusercontent.com/roalkege/jumpcoin-qt/main/templates/jumpcoin-qt.xml</TemplateURL>
-  <ReadMe>https://raw.githubusercontent.com/roalkege/jumpcoin-qt/main/README.md</ReadMe>
 
   <Category>Finance:Crypto</Category>
   <ExtraSearchTerms>jumpcoin jump coin wallet crypto staking pos qt</ExtraSearchTerms>
 
   <Requires>Docker with /dev/shm support.  Image builds are pushed to ghcr.io on every v* tag.</Requires>
 
-  <Changes>Initial release</Changes>
+  <Changes>[1.0.0] Initial release</Changes>
   <Date>2026-06-09</Date>
 
   <MinVer>6.11</MinVer>
 
-  <License>MIT</License>
+  <Config Name="WebUI Port"        Target="6080"  Default="6080"  Mode="tcp" Description="noVNC web UI - open http://[IP]:6080/vnc.html in a browser." Type="Port"     Display="always"   Required="true"  Mask="false"/>
+  <Config Name="VNC Port"          Target="5900"  Default="5900"  Mode="tcp" Description="Raw VNC port for TigerVNC / Remmina clients."                 Type="Port"     Display="always"   Required="true"  Mask="false"/>
+  <Config Name="RPC Port"          Target="31240" Default="31240" Mode="tcp" Description="JSON-RPC port. Only expose if you need external RPC access."   Type="Port"     Display="advanced" Required="false" Mask="false"/>
+  <Config Name="P2P Port"          Target="31242" Default="31242" Mode="tcp" Description="Peer-to-peer network port."                                     Type="Port"     Display="advanced" Required="false" Mask="false"/>
 
-  <!-- v2 templates declare ports/paths/variables as Config entries.
-       The defaults match docker-compose.yml and the README's Unraid
-       section.  All non-essential settings live under Display="advanced". -->
+  <Config Name="Appdata Path"      Target="/home/jumpcoin/.jumpcoin" Default="/mnt/user/appdata/jumpcoin/.jumpcoin" Mode="rw" Description="Persistent blockchain, wallet, and config. The wallet.dat inside this directory is the only authoritative copy of your coins - back it up regularly." Type="Path" Display="always" Required="true" Mask="false"/>
 
-  <!-- ===== Ports ===== -->
-  <Config Name="WebUI Port"       Target="6080"  Default="6080"  Mode="tcp" Description="noVNC web UI - open http://&lt;unraid-ip&gt;:6080/vnc.html in a browser."        Type="Port"     Display="always"   Required="true"  Mask="false"/>
-  <Config Name="VNC Port"         Target="5900"  Default="5900"  Mode="tcp" Description="Raw VNC port for TigerVNC / Remmina clients."                              Type="Port"     Display="always"   Required="true"  Mask="false"/>
-  <Config Name="RPC Port"         Target="31240" Default="31240" Mode="tcp" Description="JSON-RPC for external tools (block explorers, monitoring)."                  Type="Port"     Display="advanced"  Required="true"  Mask="false"/>
-  <Config Name="P2P Port"         Target="31242" Default="31242" Mode="tcp" Description="Peer-to-peer network port."                                                    Type="Port"     Display="advanced"  Required="true"  Mask="false"/>
+  <Config Name="VNC Password"      Target="VNC_PASSWORD"      Default=""  Description="Password for the noVNC web UI and VNC client. If empty, anyone on the network can connect - set this if the port is reachable by others." Type="Variable" Display="always"   Required="false" Mask="true"/>
+  <Config Name="RPC Password"      Target="RPC_PASSWORD"      Default=""  Description="Password for JSON-RPC. Required if you expose the RPC port externally." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="RPC Allow IP"      Target="WALLET_RPCALLOWIP" Default="127.0.0.1/32" Description="CIDR range allowed to call the JSON-RPC. Default restricts to localhost. Widen only if you need external RPC access." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Extra Daemon Args" Target="DAEMON_ARGS"       Default=""  Description="Extra jumpcoin-qt arguments. The :tor image automatically routes traffic via Tor (clearnet+onion) - no config needed. Override: -onlynet=onion (onion only), -noonion (disable Tor)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
-  <!-- ===== Paths ===== -->
-  <Config Name="Appdata Path"     Target="/home/jumpcoin/.jumpcoin" Default="/mnt/user/appdata/jumpcoin/.jumpcoin" Mode="rw" Description="Persistent blockchain, wallet, and config.  See README for backup instructions." Type="Path" Display="always" Required="true" Mask="false"/>
-  <Config Name="peers.dat Path"   Target="/home/jumpcoin/.jumpcoin/peers.dat" Default="/mnt/user/appdata/jumpcoin/peers.dat" Mode="ro" Description="Optional: a pre-seeded peers.dat file.  Must be a single file (not a directory) on the host." Type="Path" Display="advanced" Required="false" Mask="false"/>
-
-  <!-- ===== Display ===== -->
-  <Config Name="Display Width"    Target="DISPLAY_WIDTH"  Default="1280" Description="Virtual screen width in pixels."  Type="Variable" Display="advanced" Required="false" Mask="false"/>
-  <Config Name="Display Height"   Target="DISPLAY_HEIGHT" Default="800"  Description="Virtual screen height in pixels." Type="Variable" Display="advanced" Required="false" Mask="false"/>
-  <Config Name="Display Depth"    Target="DISPLAY_DEPTH"  Default="24"   Description="Color depth in bits."             Type="Variable" Display="advanced" Required="false" Mask="false"/>
-
-  <!-- ===== Credentials ===== -->
-  <Config Name="RPC Username"     Target="RPC_USER"         Default="jumpcoin"             Description="Username for JSON-RPC."                Type="Variable" Display="advanced" Required="false" Mask="false"/>
-  <Config Name="RPC Password"     Target="RPC_PASSWORD"     Default=""                      Description="Password for JSON-RPC.  CHANGE THIS from the default before exposing port 31240." Type="Variable" Display="advanced" Required="true"  Mask="true"/>
-  <Config Name="VNC Password"     Target="VNC_PASSWORD"     Default=""                      Description="Password for the noVNC web UI and VNC.  If empty, the VNC server runs without authentication (anyone on the network can connect)." Type="Variable" Display="advanced" Required="false" Mask="true"/>
-  <Config Name="RPC Allow IP"     Target="WALLET_RPCALLOWIP" Default="0.0.0.0/0"            Description="CIDR range allowed to call the JSON-RPC.  Use 127.0.0.1 if you only call it from inside this container." Type="Variable" Display="advanced" Required="false" Mask="false"/>
-
-  <!-- ===== Daemon extras ===== -->
-  <Config Name="Extra Daemon Args" Target="DAEMON_ARGS"     Default=""                      Description="Extra jumpcoin.conf lines, e.g. 'maxconnections=20 onlynet=ipv4'.  For the :tor image variant use '-proxy=127.0.0.1:9050' (clearnet+onion), '-proxy=127.0.0.1:9050 -onlynet=onion' (onion only), or '-noonion' (ignore bundled tor)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
-
-  <!-- ===== Resource limits ===== -->
-  <!--
-    Qt's QSharedMemory transport needs more than Docker's default 64 MB
-    of /dev/shm.  Without this the wallet may crash on startup with a
-    confusing "QSharedMemory: unable to create" error.
-  -->
-  <Config Name="Shared Memory"    Target="/dev/shm" Default="1g" Description="/dev/shm size.  Must be &gt;= 256 MB for Qt to start." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <ExtraParams>--shm-size=256m</ExtraParams>
 </Container>

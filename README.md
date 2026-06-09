@@ -105,21 +105,23 @@ Two image variants are published:
 | `:vX.Y.Z-tor`| Bundles a Tor daemon (9050)       | Privacy / onion routing                    |
 
 The `:tor` variant starts an internal `tor` process on
-`127.0.0.1:9050` (SOCKS5) and `127.0.0.1:9051` (control).  Tell the
-wallet how to use it via the `DAEMON_ARGS` environment variable
-(in `docker-compose.yml` or the Unraid CA template):
+`127.0.0.1:9050` (SOCKS5) and `127.0.0.1:9051` (control).  The
+entrypoint automatically adds `proxy=127.0.0.1:9050` to
+`jumpcoin.conf` on first start — no `DAEMON_ARGS` needed for the
+default clearnet+onion mode.
 
-| Goal                            | `DAEMON_ARGS` value                              |
-|---------------------------------|--------------------------------------------------|
-| Clearnet + onion (default in `:tor`) | `-proxy=127.0.0.1:9050`                    |
-| Onion **only**                  | `-proxy=127.0.0.1:9050 -onlynet=onion`           |
-| Use the bundled tor as SOCKS but skip `.onion` discovery | `-proxy=127.0.0.1:9050 -noonion` |
-| Ignore the bundled tor entirely | `-noonion` (e.g. with `:latest`)                 |
+Override the default via `DAEMON_ARGS`:
 
-> **First-start only:** `DAEMON_ARGS` is written into `jumpcoin.conf` the
-> first time the container starts with a fresh data directory.  Changes to
-> `DAEMON_ARGS` on subsequent restarts are ignored (the entrypoint logs a
-> warning).  To apply new args, stop the container, delete
+| Goal                            | `DAEMON_ARGS` value           |
+|---------------------------------|-------------------------------|
+| Clearnet + onion (**default**)  | *(leave empty)*               |
+| Onion **only**                  | `-onlynet=onion`              |
+| Ignore the bundled tor          | `-noonion`                    |
+
+> **First-start only:** Both the auto-proxy and any `DAEMON_ARGS` are
+> written into `jumpcoin.conf` only when the file does not yet exist.
+> Changes on subsequent restarts are ignored (the entrypoint logs a
+> warning).  To apply new settings, stop the container, delete
 > `data/.jumpcoin/jumpcoin.conf`, and restart.
 
 Example for onion-only on the `:tor` tag:
@@ -130,7 +132,7 @@ services:
   jumpcoin-qt:
     image: ghcr.io/roalkege/jumpcoin-qt:v1.0.0-tor
     environment:
-      DAEMON_ARGS: "-proxy=127.0.0.1:9050 -onlynet=onion"
+      DAEMON_ARGS: "-onlynet=onion"
     # ... rest unchanged
 ```
 
@@ -217,10 +219,10 @@ mkdir -p /mnt/user/appdata/jumpcoin
 ```
 
 Optional — if you have a pre-existing `peers.dat` (e.g. to bootstrap
-the wallet when DNS seeds are dead) drop it next to the folder:
+the wallet when DNS seeds are dead) place it inside the appdata folder:
 
 ```sh
-scp peers.dat root@<unraid>:/mnt/user/appdata/jumpcoin/peers.dat
+scp peers.dat root@<unraid>:/mnt/user/appdata/jumpcoin/.jumpcoin/peers.dat
 ```
 
 ### 2. Add the container
@@ -263,9 +265,9 @@ scp peers.dat root@<unraid>:/mnt/user/appdata/jumpcoin/peers.dat
 
 5. **Optional: peers.dat mapping** (only if you have a bootstrap file):
 
-   | Container path                              | Host path                                            | Access |
-   |---------------------------------------------|------------------------------------------------------|--------|
-   | `/home/jumpcoin/.jumpcoin/peers.dat`        | `/mnt/user/appdata/jumpcoin/peers.dat`               | `ro`   |
+   | Container path                              | Host path                                                    | Access |
+   |---------------------------------------------|--------------------------------------------------------------|--------|
+   | `/home/jumpcoin/.jumpcoin/peers.dat`        | `/mnt/user/appdata/jumpcoin/.jumpcoin/peers.dat`             | `ro`   |
 
    If this row is set, you must place `peers.dat` on the host first
    (step 1) and **mark the container path as a file, not a
@@ -277,21 +279,17 @@ scp peers.dat root@<unraid>:/mnt/user/appdata/jumpcoin/peers.dat
 
    | Variable | Value |
    |----------|-------|
-   | `RPC_USER` | anything other than `jumpcoin` — the container **logs a warning** if the default is used |
-   | `RPC_PASSWORD` | a strong password — **change this from the default** |
-   | `RPC_PORT` | `31240` |
-   | `P2P_PORT` | `31242` |
-   | `WALLET_RPCALLOWIP` | `0.0.0.0/0` (or `127.0.0.1` if you only use it from inside the container) |
+   | `RPC_PASSWORD` | a strong password — **change this if you expose port 31240** |
    | `VNC_PASSWORD` | a strong password (otherwise the noVNC web UI is open to anyone on your LAN) |
-   | `DISPLAY_WIDTH` | `1280` |
-   | `DISPLAY_HEIGHT` | `800` |
+   | `WALLET_RPCALLOWIP` | `127.0.0.1/32` (default, localhost only) — widen only if you need external RPC access |
 
 7. **Container size** → set **Memory limit** to `4096` MB and
    **CPU weight** to `200` (or whatever fits your box).
 
-8. **Advanced View** → set **Shared memory** to `1g` (Qt's QSharedMemory
-   transport requires more than the docker default of 64 MB; without
-   this, the wallet may crash on startup with a confusing error).
+8. **Advanced View** → set **Extra Parameters** to `--shm-size=256m`
+   (Qt's QSharedMemory transport requires more than Docker's default
+   64 MB of `/dev/shm`; without this the wallet may crash on startup
+   with a confusing error).  The CA template sets this automatically.
 
 9. Click **Apply**.  The container pulls the image from GHCR and starts.
 
