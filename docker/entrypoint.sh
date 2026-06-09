@@ -15,11 +15,27 @@ log() { printf '[entrypoint] %s\n' "$*"; }
 # -----------------------------------------------------------------------
 # 1. Make runtime dirs writable for the unprivileged user
 # -----------------------------------------------------------------------
-mkdir -p /home/jumpcoin/.supervisor
+mkdir -p /home/jumpcoin/.supervisor /home/jumpcoin/Desktop
 # Skip read-only bind mounts (e.g. user-supplied peers.dat) when
 # fixing ownership; chown on a :ro file would fail and abort the script.
 chown -R jumpcoin:jumpcoin /home/jumpcoin 2>/dev/null \
     || find /home/jumpcoin -xdev -writable -exec chown jumpcoin:jumpcoin {} +
+
+# Desktop shortcut so the user can re-launch the wallet if it ever
+# crashes (supervisord restarts it automatically, but the user may not
+# want to wait for the autorestart delay).
+cat > /home/jumpcoin/Desktop/jumpcoin-qt.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Jumpcoin-Qt
+Comment=Start or restart the Jumpcoin Qt wallet
+Exec=/usr/local/bin/launch-jumpcoin-qt
+Icon=bitcoin
+Terminal=false
+Categories=Office;Finance;
+EOF
+chmod +x /home/jumpcoin/Desktop/jumpcoin-qt.desktop
+chown jumpcoin:jumpcoin /home/jumpcoin/Desktop/jumpcoin-qt.desktop
 
 # Also try to fix /var/run and /var/log/supervisor ownership - this
 # works in most cases but may fail on some host kernels (harmless)

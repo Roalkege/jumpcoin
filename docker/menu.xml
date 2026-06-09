@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openbox_menu>
     <menu id="root-menu" label="Jumpcoin">
-        <item label="Jumpcoin-Qt">
+        <item label="Start / Restart Jumpcoin-Qt">
             <action name="Execute">
-                <command>/usr/local/bin/jumpcoin-qt</command>
-            </action>
-        </item>
-        <item label="Terminal (xterm)">
-            <action name="Execute">
-                <command>xterm</command>
+                <command>/usr/local/bin/launch-jumpcoin-qt</command>
             </action>
         </item>
         <separator/>
@@ -19,7 +14,7 @@
             <action name="Restart" />
         </item>
         <separator/>
-        <item label="Exit">
+        <item label="Exit Openbox Session">
             <action name="Exit">
                 <prompt>yes</prompt>
             </action>

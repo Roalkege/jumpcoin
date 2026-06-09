@@ -152,6 +152,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         tigervnc-common \
         tigervnc-tools \
         netcat-openbsd \
+        # Desktop helpers (file manager draws clickable icons on the
+        # Openbox desktop; thunar would also work but is much bigger)
+        pcmanfm \
         # Debug helpers (screenshotting, querying the X display, etc.)
         x11-utils \
         imagemagick \
@@ -191,8 +194,9 @@ RUN groupadd -g 1000 jumpcoin \
 COPY docker/entrypoint.sh    /usr/local/bin/entrypoint.sh
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 COPY docker/menu.xml         /etc/xdg/openbox/menu.xml
+COPY docker/launch-jumpcoin-qt.sh /usr/local/bin/launch-jumpcoin-qt
 
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/launch-jumpcoin-qt
 
 EXPOSE 6080 5900 31240 31242
 
