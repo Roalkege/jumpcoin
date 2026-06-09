@@ -7,7 +7,7 @@
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
 
-  <Icon>https://raw.githubusercontent.com/roalkege/jumpcoin-qt/main/icon.svg</Icon>
+  <Icon>https://raw.githubusercontent.com/roalkege/jumpcoin-qt/main/icon.png</Icon>
 
   <!-- Default URL opens the noVNC web client. -->
   <WebUI>http://[IP]:[PORT:6080]/vnc.html</WebUI>

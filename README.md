@@ -1,4 +1,5 @@
 # jumpcoin
+
 Community Cryptocurrency from Jumperbillijumper on YouTube
 
 ## Disclaimer
@@ -250,7 +251,7 @@ config migration, follow the upgrade notes in the release.
 ### 5. Uninstall / data wipe
 
 Removing the container **does not** delete the appdata folder.  To
-wipe everything (e.g. resync from scratch):
+wipe everything (also the wallet.dat!!!) (e.g. resync from scratch):
 
 ```sh
 rm -rf /mnt/user/appdata/jumpcoin/.jumpcoin
@@ -258,4 +259,3 @@ rm -rf /mnt/user/appdata/jumpcoin/.jumpcoin
 
 The next start of the container will recreate the folder, generate a
 fresh `jumpcoin.conf`, and resync the blockchain from zero.
-
