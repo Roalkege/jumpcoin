@@ -1,104 +1,122 @@
 # Changelog
 
-## v13.2.1 (2023-07-04)
-- Reduced the minimum fee after a fork
-- Fixed a bug in the derivation of TxTime that could potentially lead to unplanned hard forks
-- Fixed a segfault issue occurring during the initial sync
+All notable changes to the Jumpcoin Docker image are documented in this
+file.  The format follows [Keep a Changelog](https://keepachangelog.com/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## v13.2.0 (2022-11-24)
-- Changed versioning (backport of Core's PR20223)
-- Testnet hard fork: Removed transaction timestamp
-- Testnet hard fork: Increased transaction fees and set minimum transaction fee of 0.001 JUMP
-- Testnet hard fork: Enabled relative timelocks (OP_CHECKSEQUENCEVERIFY, BIP62, 112 and 113)
-- Enabled compact block relay protocol (BIP152)
-- Added an option to donate the specified percentage of staking rewards to the dev fund (20% by default)
-- Set default MAX_OP_RETURN_RELAY to 223
-- Removed `sendfreetransactions` argument
-- Get rid of `AA_EnableHighDpiScaling` warning (backport of Core's PR16254)
-- Updated multiple dependencies
+> **Image tags:** `vX.Y.Z` is the standard image (no Tor);
+> `vX.Y.Z-tor` is the variant with the bundled Tor daemon.
 
-## v2.13.2.9 (2022-02-24)
-- Updated leveldb, which should resolve the "missing UTXO" staking issue
-- Updated dependencies and ported build system from Bitcoin Core 0.20+
-- Updated crypto and added CRC32 for ARM64
-- Updated univalue to v1.0.3
-- Updated to Qt v5.12.11
-- Updated to OpenSSL v1.1.1m
-- Added "getstakereport" RPC call
-- Added --use-sse2 to enable SSE2
-- Code cleanup (headers, names, etc)
+---
 
-## v2.13.2.8 (2021-02-24)
-- Immediately ban clients operating on forked chains older than nMaxReorganizationDepth
-- Fixed IsDust() policy to allow atomic swaps
-- Updated fixed seeds for mainnet and testnet
-- Updated dependencies for MacOS
+## [Unreleased]
 
-## v2.13.2.7 (2020-11-24)
-- Dust mitigation in mempool (by JJ12880 from Radium Core) 
-- Compile on MacOS Catalina
-- Cross-compile MacOS with Xcode 11.3.1
-- Updated dependencies for Windows x64, Linux x64, MacOS, ARM64, ARMv7
-- Sign/verify compatibility with legacy clients 
-- Increased dbcache to 450MB
-- Disabled stake cache for now
-- Updated fixed seeds for mainnet and testnet
+Nothing yet.
 
-## v2.13.2.6 (2020-07-21)
-- Fix staking memory leak (by JJ12880 from Radium Core)
-- Updated fixed seeds
-- Added secondary Jumpcoin DNS seeder
+---
 
-## v2.13.2.5 (2020-04-28)
-- Updated Berkeley DB to 6.2.38
-- Updated OpenSSL to 1.0.2u
-- Updated fixed seeds
-- Changed default port on regtest to 35714
+## [1.0.0] - 2026-06-09
 
-## v2.13.2.4 (2019-11-11)
-- Updated fixed seeds
-- Added burn RPC call
-- Set default MAX_OP_RETURN_RELAY to 15000
-- Removed unit selector from status bar
+First tagged release of the all-in-one Docker image.  Published to
+`ghcr.io/roalkege/jumpcoin-qt` with both the standard and the Tor
+image variant.
 
-## v2.13.2.3 (2019-04-02)
-- Updated fixed seeds
-- Some small fixes and refactorings
-- Fixed wrongly displayed balances in GUI and RPC
-- Added header spam filter (fake stake vulnerability fix)
-- Added total balance in RPC call getwalletinfo
+### Added
 
-## v2.13.2.2 (2019-03-13)
-- Updated dependencies
-- Updated fixed seeds
-- Some small fixes and updates
-- Fixed walletpassphrase RPC call (wallet now can be unlocked for staking only)
-- Allowed connections from peers with protocol version 60016
-- Disabled BIP 152
+- **Multi-stage Dockerfile** that builds `jumpcoind` and `jumpcoin-qt`
+  from the in-tree source on `ubuntu:22.04` (Qt 5, BDB 5.3, libzmq,
+  libevent, Boost, OpenSSL).
+- **Headless X stack** so the Qt wallet renders without a physical
+  display: Xvfb, Openbox window manager, TigerVNC, noVNC + websockify.
+- **Browser-based GUI** at `http://<host>:6080/vnc.html` (no VNC client
+  required).
+- **Embedded full node** in the same container: `server=1` makes the
+  Qt process serve JSON-RPC on port 31240.  Replaces the standalone
+  `jumpcoind` (which would have collided with Qt's data-dir lock).
+- **Desktop shortcut** (`~/Desktop/jumpcoin-qt.desktop`) and an
+  Openbox right-click menu entry to re-launch the wallet if it
+  crashes.  Supervisord also restarts it automatically in the
+  background.
+- **Pre-seeded `peers.dat`** can be mounted read-only from the host
+  to bootstrap on networks where the DNS seeds are dead.
+- **GitHub Actions workflow** (`.github/workflows/docker.yml`) that
+  builds and pushes the image to GHCR on every `v*` tag.  Uses a
+  per-variant `buildcache` tag in the registry to cut rebuild time
+  from ~5 min to ~2 min.
+- **Unraid Community Applications support**:
+  `ca_profile.xml`, `templates/jumpcoin-qt.xml` with 15 Config
+  entries (4 ports, 2 paths, 3 display options, 4 credential/permission
+  vars, daemon args, /dev/shm).  Category: Finance:Crypto.
+- **Official Jumpcoin wallet logo** as `icon.png` (256x256, RGBA,
+  the teal "J" from `src/qt/res/icons/bitcoin.png`).
+- **Host bind mount** for persistence (`./data/.jumpcoin`) instead of
+  an anonymous docker volume, so `tar`/`rsync` backups are trivial.
+- **Legal disclaimer** at the top of the README covering warranty,
+  liability, and user responsibilities (no affiliation with the
+  Jumpcoin developers or the Jumperbillijumper YouTube channel).
+- **Unraid manual install guide** with a step-by-step WebGUI walkthrough
+  covering the critical `shm_size=1g` setting and the file-vs-directory
+  gotcha for the `peers.dat` bind.
+- **Tor support (`:tor` image variant)**:
+  - Build-arg `WITH_TOR=true` produces an image with the Tor daemon
+    pre-installed.
+  - Bundled Tor runs under supervisord, listening on SOCKS5
+    `127.0.0.1:9050` and control `127.0.0.1:9051`.
+  - User picks the network policy via `DAEMON_ARGS`:
+    - `-proxy=127.0.0.1:9050` (clearnet + onion)
+    - `-proxy=127.0.0.1:9050 -onlynet=onion` (onion only)
+    - `-noonion` (ignore bundled tor)
 
-## v2.13.2.1 (2018-12-03)
+### Fixed
 
-- Updated to Bitcoin Core 0.13.2
-- Some small fixes and updates from Bitcoin Core 0.14.x branch
-- Fixed testnet and regtest
-- Added Qt 5.9 support for cross-compile
-- Added Qt support for ARMv7
-- Added out-of-sync modal window (backport of Core's PR8371, PR8802, PR8805, PR8906, PR8985, PR9088, PR9461, PR9462)
-- Added support for nested commands and simple value queries in RPC console (backport of Core's PR7783)
-- Added abortrescan RPC call (backport of Core's PR10208)
-- Added reservebalance RPC call
-- Removed SegWit
-- Removed replace-by-fee
-- Removed address indexes
-- Removed relaying of double-spends
-- Removed drivechain support using OP_COUNT_ACKS
-- Proof-of-stake related code optimized and refactored
+- Data-dir lock collision: removed the redundant `jumpcoind`
+  supervisord block.  `jumpcoin-qt` is the only wallet process and
+  holds the lock exclusively.
+- `disablewallet=1` patch in the entrypoint: existing config files
+  on upgrade get the flag injected so the Qt process always owns the
+  wallet (Send/Receive/Staking tabs are visible).
+- chown on read-only bind mounts (e.g. user-supplied `peers.dat`)
+  no longer aborts the entrypoint.
+- HEALTHCHECK now also verifies the `jumpcoin-qt` process is alive,
+  not just the TCP ports.
 
-## v2.12.1.1 (2018-10-01)
+### Notes
 
-- Rebranded to Jumpcoin
-- Some small fixes and updates from Bitcoin Core 0.13.x branch
-- Added use available balance button in send coins dialog (backport of Core's PR11316)
-- Added a button to open the config file in a text editor (backport of Core's PR9890)
-- Added uptime RPC call (backport of Core's PR10400)
-- Removed P2P alert system (backport of Core's PR7692)
+- The Coin source itself (Bitcoin Core 0.13.2 fork) is unchanged.
+- Default credentials (`jumpcoin`/`jumpcoin`) are still placeholders
+  in the compose file and the CA template; users are explicitly
+  warned to change them before exposing port 31240.
+- Testnet / regtest is not wired up; mainnet only.
+
+---
+
+## Historical (pre-Docker)
+
+Versions before 1.0.0 refer to the **Coin source tree** that this
+repository carries (`src/`).  They are not Docker image tags; they
+exist here only for reference.
+
+### [Jumpcoin 2.0] - 2018-03-19
+
+- Commit `cd955b1` - "Jumpcoin 2.0 release"
+- Switched consensus from pure PoW to pure PoS.
+- Block reward: 2 JUMP (0.4 JUMP dev donation).
+- 60-second block time.
+- Client version `v13.2.0` (`src/clientversion.h`).
+
+### [1.1] - 2018-03-18
+
+- Commit `6451514` - "Rename Master to Jumpcoin 1.1"
+
+### [1.0]
+
+- Commit `f336ecd` - "last change new version"
+- Initial public release of the Jumpcoin code base, forked from
+  Bitcoin Core 0.13.2.
+
+---
+
+[Unreleased]: https://github.com/roalkege/jumpcoin-qt/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/roalkege/jumpcoin-qt/releases/tag/v1.0.0
+[Unreleased URL placeholder]: #
+[Historical URL placeholder]: #

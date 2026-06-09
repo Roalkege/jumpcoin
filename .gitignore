@@ -7,3 +7,4 @@ test/screenshots/
 # Docker runtime data
 .docker/
 data/
+tor-test.png

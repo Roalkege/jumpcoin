@@ -75,7 +75,27 @@ Open <http://localhost:6080/vnc.html> for the Qt wallet.  See
 `docker/README.md` for environment variables, ports, and the optional
 `peers.dat` mount.
 
+This starts the **standard** service (no Tor) on port 6080.  The
+**Tor** service is also defined in `docker-compose.yml` but commented
+out - uncomment the `jumpcoin-qt-tor` block and run
+`docker compose up -d jumpcoin-qt-tor` to start it on port 6082.
+See *Tor support* below for details.
+
 ### Tor support
+
+> **IMPORTANT:** The default `:latest` and `:vX.Y.Z` tags do **NOT**
+> include a Tor daemon.  Setting `DAEMON_ARGS=-proxy=...` on those
+> images has no effect because there is no Tor to connect to.  You
+> need the `:vX.Y.Z-tor` tag (or `:tor` alias) to get a bundled
+> Tor.  See "Two image variants" below.
+
+> **MUTUALLY EXCLUSIVE:** The standard and the Tor variant cannot
+> run at the same time against the same data directory.  Both
+> processes open an exclusive lock on `data/.jumpcoin/.lock`, so
+> starting both leads to "Error opening block database" on whichever
+> one started second.  Stop one, then start the other.  In
+> `docker-compose.yml` both services are defined, but only one is
+> active at a time (the other is commented out).
 
 Two image variants are published:
 

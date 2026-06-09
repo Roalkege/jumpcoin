@@ -2,6 +2,14 @@
 # Build:  docker compose build
 # Run:    docker compose up -d
 # Web UI: http://localhost:6080/vnc.html
+#
+# Two image variants are published to GHCR:
+#   :vX.Y.Z       - standard, no Tor (this file uses it by default)
+#   :vX.Y.Z-tor   - bundles a Tor daemon; see "Tor support" in README
+#
+# To run the Tor variant locally, uncomment the second service below
+# and `docker compose up -d jumpcoin-qt-tor` - it sits on a different
+# port range so it can run side-by-side with the standard one.
 
 services:
   jumpcoin-qt:
@@ -77,3 +85,58 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  # -------------------------------------------------------------------------
+  #  Tor variant (image tag :vX.Y.Z-tor, requires the GHCR workflow build
+  #  to have published one).  Uncomment to enable.  The data dir is shared
+  #  with the standard service so both containers see the same wallet and
+  #  blockchain - they are mutually exclusive (only one can have the .lock
+  #  on the data dir at a time), so DON'T start both at the same time.
+  # -------------------------------------------------------------------------
+  # jumpcoin-qt-tor:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     args:
+  #       WITH_TOR: "true"
+  #   image: jumpcoin/jumpcoin-qt:tor
+  #   container_name: jumpcoin-qt-tor
+  #   restart: unless-stopped
+  #
+  #   ports:
+  #     - "6082:6080"      # noVNC web UI (different host port)
+  #     - "5902:5900"      # VNC
+  #     - "127.0.0.1:31250:31240"  # RPC
+  #     - "127.0.0.1:31252:31242"  # P2P
+  #
+  #   volumes:
+  #     - ./data/.jumpcoin:/home/jumpcoin/.jumpcoin
+  #     - ./peers.dat:/home/jumpcoin/.jumpcoin/peers.dat:ro
+  #
+  #   environment:
+  #     RPC_USER: "jumpcoin"
+  #     RPC_PASSWORD: "jumpcoin"          # CHANGE ME
+  #     RPC_PORT: "31240"
+  #     P2P_PORT: "31242"
+  #     WALLET_RPCALLOWIP: "127.0.0.1"
+  #     VNC_PORT: "5900"
+  #     NOVNC_PORT: "6080"
+  #     DISPLAY_WIDTH: "1280"
+  #     DISPLAY_HEIGHT: "800"
+  #     DISPLAY_DEPTH: "24"
+  #     # Tor: default is clearnet + onion.  Set -onlynet=onion for onion-only.
+  #     DAEMON_ARGS: "-proxy=127.0.0.1:9050"
+  #
+  #   shm_size: "1g"
+  #
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "4.0"
+  #         memory: 4G
+  #
+  #   logging:
+  #     driver: json-file
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
