@@ -57,7 +57,8 @@ WORKDIR /src
 # Copy the source tree
 COPY . .
 
-RUN /bin/sh ./autogen.sh \
+RUN chmod +x ./share/genbuild.sh \
+    && /bin/sh ./autogen.sh \
     && ./configure \
         --prefix=/usr/local \
         --with-gui=qt5 \
