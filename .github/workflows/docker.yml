@@ -61,12 +61,9 @@ jobs:
         if: matrix.variant == 'standard'
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin-qt
+          images: ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin
           tags: |
-            type=ref,event=tag
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
             type=sha,format=short
 
       # For the Tor variant we rewrite the generated tag set so that
@@ -79,12 +76,10 @@ jobs:
         if: matrix.variant == 'tor'
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin-qt
+          images: ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin
           tags: |
-            type=ref,event=tag,suffix=-tor
+            type=raw,value=tor
             type=semver,pattern={{version}},suffix=-tor
-            type=semver,pattern={{major}}.{{minor}},suffix=-tor
-            type=semver,pattern={{major}},suffix=-tor
             type=sha,format=short,suffix=-tor
 
       - name: Build and push (${{ matrix.description }})

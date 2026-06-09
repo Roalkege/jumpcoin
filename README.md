@@ -101,8 +101,8 @@ Two image variants are published:
 
 | Tag          | Contents                          | Use case                                   |
 |--------------|-----------------------------------|--------------------------------------------|
-| `:vX.Y.Z`    | Standard, no Tor                  | Default - connect to clearnet peers        |
-| `:vX.Y.Z-tor`| Bundles a Tor daemon (9050)       | Privacy / onion routing                    |
+| `:X.Y.Z`     | Standard, no Tor                  | Default - connect to clearnet peers        |
+| `:X.Y.Z-tor` | Bundles a Tor daemon (9050)       | Privacy / onion routing                    |
 
 The `:tor` variant starts an internal `tor` process on
 `127.0.0.1:9050` (SOCKS5) and `127.0.0.1:9051` (control).  The
@@ -130,7 +130,7 @@ Example for onion-only on the `:tor` tag:
 # docker-compose.yml
 services:
   jumpcoin-qt:
-    image: ghcr.io/roalkege/jumpcoin-qt:v1.0.0-tor
+    image: ghcr.io/roalkege/jumpcoin:1.0.0-tor
     environment:
       DAEMON_ARGS: "-onlynet=onion"
     # ... rest unchanged
@@ -170,14 +170,14 @@ means:
 Tagged releases are published to GitHub Container Registry:
 
 ```sh
-docker pull ghcr.io/roalkege/jumpcoin-qt:v1.0.0
+docker pull ghcr.io/roalkege/jumpcoin:1.0.0
 ```
 
 ### Build a release
 
 This repository ships a GitHub Actions workflow
 (`.github/workflows/docker.yml`) that builds and pushes the image to
-`ghcr.io/<owner>/jumpcoin-qt` whenever you push a tag that starts with
+`ghcr.io/<owner>/jumpcoin` whenever you push a tag that starts with
 `v`:
 
 ```sh
@@ -185,8 +185,8 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-Tags are produced automatically (`v1.0.0`, `v1.0`, `v1`, plus a
-short-SHA build) using `docker/metadata-action`.  Layers are cached in
+Tags are produced automatically (`1.0.0` plus a short-SHA build)
+using `docker/metadata-action`.  Layers are cached in
 the registry under the `buildcache` tag so subsequent builds reuse
 ~80% of the previous image.
 
@@ -235,8 +235,8 @@ scp peers.dat root@<unraid>:/mnt/user/appdata/jumpcoin/.jumpcoin/peers.dat
    | Field | Value |
    |-------|-------|
    | Name | `jumpcoin-qt` |
-   | Repository | `ghcr.io/roalkege/jumpcoin-qt` |
-   | Tag | `v1.0.0` (or `latest` if you want auto-updates) |
+   | Repository | `ghcr.io/roalkege/jumpcoin` |
+   | Tag | `1.0.0` (or `latest` if you want auto-updates) |
    | Network Type | `bridge` |
    | Console shell command | `bash` (only needed for debugging) |
 
@@ -308,10 +308,10 @@ appdata folder, then restart from the Docker tab.
 
 ### 4. Upgrades
 
-When a new tag is published (e.g. `v1.1.0`):
+When a new tag is published (e.g. `1.1.0`):
 
 1. Docker tab → click the jumpcoin-qt container → **Stop**.
-2. **Edit** the container, change the **Tag** field to `v1.1.0`.
+2. **Edit** the container, change the **Tag** field to `1.1.0`.
 3. Click **Apply** (this re-pulls the image).
 4. Click **Start** once the new image is pulled.
 

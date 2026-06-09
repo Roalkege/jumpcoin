@@ -1,13 +1,13 @@
 <Container version="2">
   <Name>Jumpcoin-Qt</Name>
-  <Repository>ghcr.io/roalkege/jumpcoin-qt:latest</Repository>
-  <Registry>https://ghcr.io/roalkege/jumpcoin-qt</Registry>
+  <Repository>ghcr.io/roalkege/jumpcoin:latest</Repository>
+  <Registry>https://ghcr.io/roalkege/jumpcoin</Registry>
   <Network>bridge</Network>
 
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
 
-  <Icon>https://raw.githubusercontent.com/roalkege/jumpcoin-qt/main/icon.png</Icon>
+  <Icon>https://raw.githubusercontent.com/roalkege/jumpcoin/main/icon.png</Icon>
 
   <WebUI>http://[IP]:[PORT:6080]/vnc.html</WebUI>
 
@@ -20,11 +20,11 @@ Data (blockchain, wallet, config) is persisted under the Appdata Path you config
 - :latest - standard, no Tor.[br]
 - :tor - bundles a Tor daemon and routes traffic through it automatically (clearnet+onion). Override via Extra Daemon Args: -onlynet=onion (onion only) or -noonion (disable Tor).</Description>
 
-  <Support>https://github.com/roalkege/jumpcoin-qt/issues</Support>
+  <Support>https://github.com/Roalkege/jumpcoin/issues</Support>
 
-  <Project>https://github.com/roalkege/jumpcoin-qt</Project>
+  <Project>https://github.com/Roalkege/jumpcoin</Project>
 
-  <TemplateURL>https://raw.githubusercontent.com/roalkege/jumpcoin-qt/main/templates/jumpcoin-qt.xml</TemplateURL>
+  <TemplateURL>https://raw.githubusercontent.com/roalkege/jumpcoin/main/templates/jumpcoin-qt.xml</TemplateURL>
 
   <Category>Finance:Crypto</Category>
   <ExtraSearchTerms>jumpcoin jump coin wallet crypto staking pos qt</ExtraSearchTerms>

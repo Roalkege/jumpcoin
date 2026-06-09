@@ -4,8 +4,8 @@
 # Web UI: http://localhost:6080/vnc.html
 #
 # Two image variants are published to GHCR:
-#   :vX.Y.Z       - standard, no Tor (this file uses it by default)
-#   :vX.Y.Z-tor   - bundles a Tor daemon; see "Tor support" in README
+#   :X.Y.Z        - standard, no Tor (this file uses it by default)
+#   :X.Y.Z-tor    - bundles a Tor daemon; see "Tor support" in README
 #
 # To run the Tor variant locally, uncomment the second service below
 # and `docker compose up -d jumpcoin-qt-tor` - it sits on a different
@@ -16,7 +16,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: jumpcoin/jumpcoin-qt:latest
+    image: ghcr.io/roalkege/jumpcoin:latest
     container_name: jumpcoin-qt
     restart: unless-stopped
 
@@ -99,7 +99,7 @@ services:
   #     dockerfile: Dockerfile
   #     args:
   #       WITH_TOR: "true"
-  #   image: jumpcoin/jumpcoin-qt:tor
+  #   image: ghcr.io/roalkege/jumpcoin:tor
   #   container_name: jumpcoin-qt-tor
   #   restart: unless-stopped
   #

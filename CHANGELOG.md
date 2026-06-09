@@ -4,42 +4,30 @@ All notable changes to the Jumpcoin Docker image are documented in this
 file.  The format follows [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-> **Image tags:** `vX.Y.Z` is the standard image (no Tor);
-> `vX.Y.Z-tor` is the variant with the bundled Tor daemon.
+> **Image tags:** `X.Y.Z` is the standard image (no Tor);
+> `tor` is the static alias for the latest Tor-variant build
+> (a single tag, not one per semver).
 
 ---
 
 ## [Unreleased]
 
-### Added
+Nothing yet.
 
-- **Automatic Tor proxy for `:tor` image** (`docker/entrypoint.sh`): the
-  entrypoint now detects whether `/usr/bin/tor` is present and automatically
-  writes `proxy=127.0.0.1:9050` into `jumpcoin.conf` on first start, enabling
-  clearnet+onion routing without any `DAEMON_ARGS`.  Users can override with
-  `-onlynet=onion` (onion only) or `-noonion` (disable Tor).
+---
 
-### Fixed
-
-- **`/dev/shm` Config entry in CA template** (`templates/jumpcoin-qt.xml`):
-  the broken `Type="Variable" Target="/dev/shm"` entry (which set an env var
-  named `/dev/shm` rather than actually sizing shared memory) has been replaced
-  with `<ExtraParams>--shm-size=256m</ExtraParams>`.
-- **peers.dat default host path** (`templates/jumpcoin-qt.xml`): corrected
-  from `/mnt/user/appdata/jumpcoin/peers.dat` to
-  `/mnt/user/appdata/jumpcoin/.jumpcoin/peers.dat` to be consistent with the
-  Appdata Path mount.
-- **`RPC Allow IP` default** (`templates/jumpcoin-qt.xml`): changed from
-  `0.0.0.0/0` (world-open) to `127.0.0.1/32` (localhost only).
+## [1.0.2] - 2026-06-09
 
 ### Changed
 
-- **CA template simplified** (`templates/jumpcoin-qt.xml`): removed the
-  `peers.dat Path`, `Display Width/Height/Depth`, and `RPC Username` Config
-  entries to reduce UI clutter.  Display settings use image defaults; RPC
-  username is fixed to `jumpcoin`.  `RPC Port` and `P2P Port` are now
-  `Required="false"`.  `VNC Password` moved to `Display="always"` since it is
-  security-relevant.
+- **Image tag scheme simplified** (`.github/workflows/docker.yml`): the Tor
+  variant now publishes a single static `:tor` tag (instead of one
+  `:X.Y.Z-tor` tag per semver).  The standard variant keeps
+  `:X.Y.Z` and the SHA tag.  Less tag noise in the
+  registry, same per-image `org.opencontainers.image.version` for
+  traceability.
+
+---
 
 ---
 
@@ -49,6 +37,14 @@ Patch release that ships the bugfixes which accumulated between
 the v1.0.0 tag and the first successful GHCR image build.  No
 API / image-contract changes: the standard and Tor tags still
 behave the same to the user.
+
+### Added
+
+- **Automatic Tor proxy for `:tor` image** (`docker/entrypoint.sh`): the
+  entrypoint now detects whether `/usr/bin/tor` is present and automatically
+  writes `proxy=127.0.0.1:9050` into `jumpcoin.conf` on first start, enabling
+  clearnet+onion routing without any `DAEMON_ARGS`.  Users can override with
+  `-onlynet=onion` (onion only) or `-noonion` (disable Tor).
 
 ### Fixed
 
@@ -76,6 +72,22 @@ behave the same to the user.
   can `setuid` to `debian-tor`); updated the priority table to match actual
   values (pcmanfm=25, tor=40, jumpcoin-qt=50; removed the non-existent
   jumpcoind entry).
+- **`/dev/shm` Config entry in CA template** (`templates/jumpcoin-qt.xml`):
+  the broken `Type="Variable" Target="/dev/shm"` entry (which set an env var
+  named `/dev/shm` rather than actually sizing shared memory) has been replaced
+  with `<ExtraParams>--shm-size=256m</ExtraParams>`.
+- **peers.dat default host path** (`templates/jumpcoin-qt.xml`): corrected
+  from `/mnt/user/appdata/jumpcoin/peers.dat` to
+  `/mnt/user/appdata/jumpcoin/.jumpcoin/peers.dat` to be consistent with the
+  Appdata Path mount.
+- **`RPC Allow IP` default** (`templates/jumpcoin-qt.xml`): changed from
+  `0.0.0.0/0` (world-open) to `127.0.0.1/32` (localhost only).
+- **CA template simplified** (`templates/jumpcoin-qt.xml`): removed the
+  `peers.dat Path`, `Display Width/Height/Depth`, and `RPC Username` Config
+  entries to reduce UI clutter.  Display settings use image defaults; RPC
+  username is fixed to `jumpcoin`.  `RPC Port` and `P2P Port` are now
+  `Required="false"`.  `VNC Password` moved to `Display="always"` since it is
+  security-relevant.
 
 ### Changed
 
@@ -89,7 +101,7 @@ behave the same to the user.
 ## [1.0.0] - 2026-06-09
 
 First tagged release of the all-in-one Docker image.  Published to
-`ghcr.io/roalkege/jumpcoin-qt` with both the standard and the Tor
+`ghcr.io/roalkege/jumpcoin` with both the standard and the Tor
 image variant.
 
 ### Added
@@ -183,8 +195,9 @@ exist here only for reference.
 
 ---
 
-[Unreleased]: https://github.com/roalkege/jumpcoin-qt/compare/v1.0.1...HEAD
-[1.0.0]: https://github.com/roalkege/jumpcoin-qt/releases/tag/v1.0.0
-[1.0.1]: https://github.com/roalkege/jumpcoin-qt/releases/tag/v1.0.1
+[Unreleased]: https://github.com/Roalkege/jumpcoin/compare/v1.0.2...HEAD
+[1.0.0]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.0
+[1.0.1]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.1
+[1.0.2]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.2
 [Unreleased URL placeholder]: #
 [Historical URL placeholder]: #
