@@ -116,6 +116,12 @@ wallet how to use it via the `DAEMON_ARGS` environment variable
 | Use the bundled tor as SOCKS but skip `.onion` discovery | `-proxy=127.0.0.1:9050 -noonion` |
 | Ignore the bundled tor entirely | `-noonion` (e.g. with `:latest`)                 |
 
+> **First-start only:** `DAEMON_ARGS` is written into `jumpcoin.conf` the
+> first time the container starts with a fresh data directory.  Changes to
+> `DAEMON_ARGS` on subsequent restarts are ignored (the entrypoint logs a
+> warning).  To apply new args, stop the container, delete
+> `data/.jumpcoin/jumpcoin.conf`, and restart.
+
 Example for onion-only on the `:tor` tag:
 
 ```sh
@@ -271,7 +277,7 @@ scp peers.dat root@<unraid>:/mnt/user/appdata/jumpcoin/peers.dat
 
    | Variable | Value |
    |----------|-------|
-   | `RPC_USER` | `jumpcoin` |
+   | `RPC_USER` | anything other than `jumpcoin` — the container **logs a warning** if the default is used |
    | `RPC_PASSWORD` | a strong password — **change this from the default** |
    | `RPC_PORT` | `31240` |
    | `P2P_PORT` | `31242` |

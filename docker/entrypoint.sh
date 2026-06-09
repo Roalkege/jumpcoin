@@ -44,6 +44,10 @@ chown -R jumpcoin:jumpcoin /var/run /var/log/supervisor /var/lock 2>/dev/null ||
 # -----------------------------------------------------------------------
 # 2. jumpcoin.conf  (only generated if it doesn't already exist)
 # -----------------------------------------------------------------------
+if [[ "${RPC_USER:-}" == "jumpcoin" && "${RPC_PASSWORD:-}" == "jumpcoin" ]]; then
+    log "WARNING: default RPC credentials in use (jumpcoin/jumpcoin) — set RPC_USER and RPC_PASSWORD before exposing port ${RPC_PORT:-31240}"
+fi
+
 if [[ ! -s "${CONF_FILE}" ]]; then
     log "Generating ${CONF_FILE}"
     cat > "${CONF_FILE}" <<EOF
@@ -78,7 +82,22 @@ if [[ -f "${LOCK_FILE}" ]]; then
 fi
 
 if [[ -n "${DAEMON_ARGS}" ]]; then
-    printf '\n# User-supplied args:\n%s\n' "${DAEMON_ARGS}" >> "${CONF_FILE}"
+    # Idempotent: only append once so repeated restarts don't grow the file.
+    # DAEMON_ARGS changes take effect after a full data-dir reset.
+    if ! grep -q '^# User-supplied args:' "${CONF_FILE}"; then
+        log "Appending DAEMON_ARGS to ${CONF_FILE}"
+        printf '\n# User-supplied args:\n' >> "${CONF_FILE}"
+        # Strip leading dashes (conf format is key=value, not -key=value)
+        # and write one option per line so each is parsed independently.
+        for arg in ${DAEMON_ARGS}; do
+            arg="${arg#--}"
+            arg="${arg#-}"
+            printf '%s\n' "${arg}" >> "${CONF_FILE}"
+        done
+        chown jumpcoin:jumpcoin "${CONF_FILE}"
+    else
+        log "WARNING: DAEMON_ARGS already applied to ${CONF_FILE} — changes are ignored until the data dir is reset"
+    fi
 fi
 
 # -----------------------------------------------------------------------

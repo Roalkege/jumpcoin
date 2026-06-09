@@ -16,6 +16,7 @@ jobs:
     permissions:
       contents: read       # checkout
       packages: write      # push to ghcr.io
+      actions: write       # write GHA layer cache
     strategy:
       fail-fast: false
       # Keep resource-heavy image builds sequential on hosted runners.
@@ -96,3 +97,5 @@ jobs:
           build-args: WITH_TOR=${{ matrix.with_tor }}
           tags: ${{ matrix.variant == 'standard' && steps.meta-standard.outputs.tags || steps.meta-tor.outputs.tags }}
           labels: ${{ matrix.variant == 'standard' && steps.meta-standard.outputs.labels || steps.meta-tor.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.variant }}
+          cache-to: type=gha,scope=${{ matrix.variant }},mode=max
