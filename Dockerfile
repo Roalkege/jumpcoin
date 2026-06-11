@@ -247,7 +247,9 @@ RUN if [ "$WITH_TOR" = "true" ]; then \
         && chown -R debian-tor:debian-tor /var/lib/tor /var/log/tor ; \
     fi
 
-RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/launch-jumpcoin-qt
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/launch-jumpcoin-qt \
+        /etc/supervisor/supervisord.conf \
+    && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/launch-jumpcoin-qt
 
 EXPOSE 6080 5900 31240 31242
 
