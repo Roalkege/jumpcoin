@@ -33,7 +33,8 @@ Data (blockchain, wallet, config) is persisted under the Appdata Path you config
   <Requires>Image builds are pushed to ghcr.io on every v* tag.</Requires>
 
   <Changes>
-[1.0.1] Fix x0vncserver startup flag, upgrade Berkeley DB to 6.2.32, normalize line endings
+[1.0.6] Add branch selector (latest/tor) and new display/RPC variables to Unraid template
+[1.0.5] Fix x0vncserver startup flag
 [1.0.0] Initial release
   </Changes>
   <Date>2026-06-11</Date>

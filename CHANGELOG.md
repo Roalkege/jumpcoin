@@ -16,6 +16,21 @@ Nothing yet.
 
 ---
 
+## [1.0.6] - 2026-06-11
+
+### Changed
+
+- **Unraid CA template: Branch selector** (`templates/jumpcoin-qt.xml`): added
+  `<Branch>` elements so Community Applications shows a "Choose A Branch To
+  Install" dialog — users can now pick `:latest` (standard, no Tor) or `:tor`
+  (bundled Tor daemon) at install time without needing a separate template.
+- **Unraid CA template: new variables** (`templates/jumpcoin-qt.xml`): added
+  `RPC_USER`, `DISPLAY_WIDTH`, and `DISPLAY_HEIGHT` as Advanced config entries.
+- Removed redundant `templates/jumpcoin-qt-tor.xml` (superseded by the branch
+  selector in the main template).
+
+---
+
 ## [1.0.5] - 2026-06-09
 
 ### Fixed
