@@ -11,14 +11,15 @@
 
   <WebUI>http://[IP]:[PORT:6080]/vnc.html</WebUI>
 
-  <Overview>Unofficial community-maintained Docker container for the Jumpcoin Qt wallet. Runs the wallet in a headless X server and exposes the GUI through noVNC in any modern browser - no display server or VNC client required.</Overview>
+  <Overview>Unofficial community-maintained Docker container for the Jumpcoin Qt wallet. Runs the wallet in a headless X server and exposes the GUI through noVNC in any modern browser - no display server or VNC client required. Two branches: standard (clearnet) and Tor (onion routing).</Overview>
 
   <Description>USE AT YOUR OWN RISK. This is an unofficial, community-maintained container, not affiliated with the original Jumpcoin developers or the Jumperbillijumper YouTube channel.[br][br]
 The image runs jumpcoin-qt under a virtual framebuffer (Xvfb) with Openbox, exposes it through TigerVNC and a noVNC web bridge, and also runs the embedded full node (RPC available on port 31240). A desktop shortcut inside the VNC session lets you re-launch the wallet if it ever crashes.[br][br]
-Data (blockchain, wallet, config) is persisted under the Appdata Path you configure below. See the README for offline-backup instructions - the wallet.dat is the only authoritative copy of your coins.[br][br]
-[b]Image variants:[/b][br]
-- :latest - standard, no Tor.[br]
-- :tor - bundles a Tor daemon and routes traffic through it automatically (clearnet+onion). Override via Extra Daemon Args: -onlynet=onion (onion only) or -noonion (disable Tor).</Description>
+[b]Branches:[/b][br]
+- [b]latest[/b] - standard, connects to clearnet peers.[br]
+- [b]tor[/b] - bundles a Tor daemon, routes traffic through Tor automatically (clearnet+onion). Override via Extra Daemon Args: -onlynet=onion (onion only) or -noonion (disable Tor).[br][br]
+Data (blockchain, wallet, config) is persisted under the Appdata Path you configure below. The wallet.dat inside is the only authoritative copy of your coins - back it up regularly.[br][br]
+[b]Note:[/b] Both branches share the same data directory but cannot run at the same time.</Description>
 
   <Support>https://github.com/Roalkege/jumpcoin/issues</Support>
 
@@ -29,10 +30,13 @@ Data (blockchain, wallet, config) is persisted under the Appdata Path you config
   <Category>Crypto: Tools: Productivity:</Category>
   <ExtraSearchTerms>jumpcoin jump coin wallet crypto staking pos qt</ExtraSearchTerms>
 
-  <Requires>Docker with /dev/shm support.  Image builds are pushed to ghcr.io on every v* tag.</Requires>
+  <Requires>Image builds are pushed to ghcr.io on every v* tag.</Requires>
 
-  <Changes>[1.0.0] Initial release</Changes>
-  <Date>2026-06-09</Date>
+  <Changes>
+[1.0.1] Fix x0vncserver startup flag, upgrade Berkeley DB to 6.2.32, normalize line endings
+[1.0.0] Initial release
+  </Changes>
+  <Date>2026-06-11</Date>
 
   <MinVer>6.11</MinVer>
 
@@ -43,10 +47,22 @@ Data (blockchain, wallet, config) is persisted under the Appdata Path you config
 
   <Config Name="Appdata Path"      Target="/home/jumpcoin/.jumpcoin" Default="/mnt/user/appdata/jumpcoin/.jumpcoin" Mode="rw" Description="Persistent blockchain, wallet, and config. The wallet.dat inside this directory is the only authoritative copy of your coins - back it up regularly." Type="Path" Display="always" Required="true" Mask="false"/>
 
-  <Config Name="VNC Password"      Target="VNC_PASSWORD"      Default=""  Description="Password for the noVNC web UI and VNC client. If empty, anyone on the network can connect - set this if the port is reachable by others." Type="Variable" Display="always"   Required="false" Mask="true"/>
-  <Config Name="RPC Password"      Target="RPC_PASSWORD"      Default=""  Description="Password for JSON-RPC. Required if you expose the RPC port externally." Type="Variable" Display="advanced" Required="false" Mask="true"/>
-  <Config Name="RPC Allow IP"      Target="WALLET_RPCALLOWIP" Default="127.0.0.1/32" Description="CIDR range allowed to call the JSON-RPC. Default restricts to localhost. Widen only if you need external RPC access." Type="Variable" Display="advanced" Required="false" Mask="false"/>
-  <Config Name="Extra Daemon Args" Target="DAEMON_ARGS"       Default=""  Description="Extra jumpcoin-qt arguments. The :tor image automatically routes traffic via Tor (clearnet+onion) - no config needed. Override: -onlynet=onion (onion only), -noonion (disable Tor)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="VNC Password"      Target="VNC_PASSWORD"      Default=""             Description="Password for the noVNC web UI and VNC client. If empty, anyone on the network can connect - set this if the port is reachable by others." Type="Variable" Display="always"   Required="false" Mask="true"/>
+  <Config Name="RPC User"          Target="RPC_USER"          Default="jumpcoin"     Description="Username for JSON-RPC authentication."                                                                                                      Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="RPC Password"      Target="RPC_PASSWORD"      Default=""             Description="Password for JSON-RPC. Required if you expose the RPC port externally."                                                                     Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="RPC Allow IP"      Target="WALLET_RPCALLOWIP" Default="127.0.0.1/32" Description="CIDR range allowed to call the JSON-RPC. Default restricts to localhost. Widen only if you need external RPC access."                      Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Display Width"     Target="DISPLAY_WIDTH"     Default="1280"         Description="Horizontal resolution of the virtual desktop in pixels."                                                                                    Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Display Height"    Target="DISPLAY_HEIGHT"    Default="800"          Description="Vertical resolution of the virtual desktop in pixels."                                                                                      Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Extra Daemon Args" Target="DAEMON_ARGS"       Default=""             Description="Extra jumpcoin-qt arguments, e.g. -maxconnections=20 -onlynet=ipv4."                                                                       Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
   <ExtraParams>--shm-size=256m</ExtraParams>
+
+  <Branch>
+    <Tag>latest</Tag>
+    <TagDescription>Standard image, no Tor. Connects to clearnet peers only.</TagDescription>
+  </Branch>
+  <Branch>
+    <Tag>tor</Tag>
+    <TagDescription>Bundled Tor daemon. Routes traffic through Tor automatically (clearnet+onion). Override via Extra Daemon Args.</TagDescription>
+  </Branch>
 </Container>
