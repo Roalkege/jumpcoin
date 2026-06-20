@@ -174,16 +174,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libboost-program-options1.74.0 \
         libzmq5 \
         libminiupnpc17 \
-        tigervnc-standalone-server \
-        tigervnc-scraping-server \
-        tigervnc-common \
         tigervnc-tools \
+        x11vnc \
         netcat-openbsd \
         # Desktop helpers (file manager draws clickable icons on the
         # Openbox desktop; thunar would also work but is much bigger)
         pcmanfm \
+        autocutsel \
         # Debug helpers (screenshotting, querying the X display, etc.)
         x11-utils \
+        xclip \
+        xsel \
         imagemagick \
     && rm -rf /var/lib/apt/lists/*
 
@@ -230,6 +231,7 @@ RUN groupadd -g 1000 jumpcoin \
     && chown -R jumpcoin:jumpcoin /home/jumpcoin
 
 COPY docker/entrypoint.sh    /usr/local/bin/entrypoint.sh
+COPY docker/start-vnc.sh     /usr/local/bin/start-vnc
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 COPY docker/menu.xml         /etc/xdg/openbox/menu.xml
 COPY docker/launch-jumpcoin-qt.sh /usr/local/bin/launch-jumpcoin-qt
@@ -247,9 +249,9 @@ RUN if [ "$WITH_TOR" = "true" ]; then \
         && chown -R debian-tor:debian-tor /var/lib/tor /var/log/tor ; \
     fi
 
-RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/launch-jumpcoin-qt \
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/start-vnc /usr/local/bin/launch-jumpcoin-qt \
         /etc/supervisor/supervisord.conf \
-    && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/launch-jumpcoin-qt
+    && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/start-vnc /usr/local/bin/launch-jumpcoin-qt
 
 EXPOSE 6080 5900 31240 31242
 

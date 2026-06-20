@@ -149,11 +149,13 @@ fi
 # 4. Hand off to supervisord (which will drop to jumpcoin via `user=jumpcoin`)
 # -----------------------------------------------------------------------
 
-# In the :latest image the debian-tor user does not exist (tor is not
-# installed).  Supervisord validates user= at startup and aborts if the
-# user is missing, even when the program block is a no-op.  Patch the
-# conf in-place so both variants share one file.
-if ! id debian-tor >/dev/null 2>&1; then
+# In the :latest image Tor is not installed. Remove the supervisor block so
+# supervisorctl only reports processes that exist in the non-Tor variant.
+if [[ ! -x /usr/bin/tor ]]; then
+    sed -i '/^\[program:tor\]/,$d' "${SUPERVISORD_CONF}"
+elif ! id debian-tor >/dev/null 2>&1; then
+    # Keep the shared config loadable even if a custom Tor package omits the
+    # expected debian-tor user.
     sed -i 's/^user=debian-tor$/user=root/' "${SUPERVISORD_CONF}"
 fi
 

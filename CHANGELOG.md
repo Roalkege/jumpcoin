@@ -16,6 +16,20 @@ Nothing yet.
 
 ---
 
+## [1.0.7] - 2026-06-20
+
+### Fixed
+
+- **noVNC clipboard paste** (`Dockerfile`, `docker/supervisord.conf`,
+  `docker/start-vnc.sh`): replaced the TigerVNC scraping server with
+  `x11vnc` for the existing Xvfb display and added `autocutsel` so text
+  entered in the noVNC clipboard panel can be pasted into the Qt wallet.
+- **Standard image supervisor status** (`docker/entrypoint.sh`): remove the
+  Tor supervisor block when Tor is not installed so the non-Tor image reports
+  only real runtime services.
+
+---
+
 ## [1.0.6] - 2026-06-11
 
 ### Changed
@@ -225,7 +239,9 @@ exist here only for reference.
 
 ---
 
-[Unreleased]: https://github.com/Roalkege/jumpcoin/compare/v1.0.5...HEAD
+[Unreleased]: https://github.com/Roalkege/jumpcoin/compare/v1.0.7...HEAD
+[1.0.7]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.7
+[1.0.6]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.6
 [1.0.0]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.0
 [1.0.1]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.1
 [1.0.2]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.2
