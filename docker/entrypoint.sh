@@ -89,6 +89,38 @@ if [[ -x /usr/bin/tor ]]; then
     fi
 fi
 
+# Auto-configure Tor bridges (obfs4) for the :tor image variant.
+# Useful when the local network/ISP blocks the public Tor directory
+# authorities and Tor gets stuck bootstrapping at 30%.  Bridges are
+# opt-in via TOR_USE_BRIDGES=true and supplied via the multi-line
+# TOR_BRIDGES env var (one obfs4 bridge line per line, in the format
+# from https://bridges.torproject.org).  torrc is rebuilt from the
+# image on every container start, so no strict idempotency is needed,
+# but we still guard with a marker so a re-run doesn't double-append.
+TORRC_FILE="/etc/tor/torrc"
+if [[ -x /usr/bin/tor && "${TOR_USE_BRIDGES:-false}" == "true" ]]; then
+    if [[ -z "${TOR_BRIDGES:-}" ]]; then
+        log "WARNING: TOR_USE_BRIDGES=true but TOR_BRIDGES is empty — no bridges configured, Tor will use the public directory authorities"
+    elif grep -q '^# Tor bridges:' "${TORRC_FILE}" 2>/dev/null; then
+        log "Tor bridges already configured in ${TORRC_FILE} — skipping"
+    else
+        log "Configuring Tor bridges (obfs4) in ${TORRC_FILE}"
+        {
+            printf '\n# Tor bridges: injected by entrypoint (TOR_USE_BRIDGES=true)\n'
+            printf 'UseBridges 1\n'
+            printf 'ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy\n'
+            # One "Bridge <line>" per non-empty line of TOR_BRIDGES.
+            while IFS= read -r _bridge; do
+                # Trim leading/trailing whitespace; skip blank lines.
+                _bridge="${_bridge#"${_bridge%%[![:space:]]*}"}"
+                _bridge="${_bridge%"${_bridge##*[![:space:]]}"}"
+                [[ -z "${_bridge}" ]] && continue
+                printf 'Bridge %s\n' "${_bridge}"
+            done <<< "${TOR_BRIDGES}"
+        } >> "${TORRC_FILE}"
+    fi
+fi
+
 # Clean up stale wallet lock from a previous (unclean) shutdown
 LOCK_FILE="${DATA_DIR}/.lock"
 if [[ -f "${LOCK_FILE}" ]]; then

@@ -124,7 +124,9 @@ ENV HOME=/home/jumpcoin \
     VNC_SECURITY_TYPES=VncAuth \
     DAEMON_ARGS= \
     TOR_SOCKS_PORT=9050 \
-    TOR_CONTROL_PORT=9051
+    TOR_CONTROL_PORT=9051 \
+    TOR_USE_BRIDGES=false \
+    TOR_BRIDGES=
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -194,6 +196,7 @@ RUN if [ "$WITH_TOR" = "true" ]; then \
         apt-get update && apt-get install -y --no-install-recommends \
             tor \
             torsocks \
+            obfs4proxy \
         && rm -rf /var/lib/apt/lists/* ; \
     fi
 
