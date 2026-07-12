@@ -47,7 +47,6 @@ services:
       # host file, e.g. "/mnt/user/appdata/jumpcoin/peers.dat".
       #
       # - ./peers.dat:/home/jumpcoin/.jumpcoin/peers.dat:ro
-      - ./peers.dat:/home/jumpcoin/.jumpcoin/peers.dat:ro
 
     # RPC credentials for the embedded jumpcoind
     environment:

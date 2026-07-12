@@ -74,6 +74,27 @@ else
     fi
 fi
 
+# -----------------------------------------------------------------------
+# 2b. Bootstrap peers
+# -----------------------------------------------------------------------
+# Small-network safety net: if the config has NO manual peers configured
+# (no addnode/connect), seed persistent addnode entries pointing at the
+# DNS seed hostnames. Unlike DNS-seed results (which land in addrman and
+# are only tried opportunistically), addnode peers are retried
+# persistently, so a node whose peers.dat is full of dead peers can still
+# bootstrap. Idempotent: skipped once the user has any addnode/connect
+# line, so it never duplicates and never overrides a user's own choice.
+if ! grep -Eq '^[[:space:]]*(addnode|connect)=' "${CONF_FILE}" 2>/dev/null; then
+    log "No manual peers in ${CONF_FILE} — adding DNS seed hosts as addnode fallbacks"
+    {
+        printf '\n# Bootstrap peers (added by entrypoint; remove/override freely)\n'
+        for _n in 1 2 3 4 5 6 7 8; do
+            printf 'addnode=seed%s.jumpcoin.net\n' "${_n}"
+        done
+    } >> "${CONF_FILE}"
+    chown jumpcoin:jumpcoin "${CONF_FILE}"
+fi
+
 # Auto-configure Tor proxy for the :tor image variant.
 # If /usr/bin/tor is present but the user hasn't set a proxy or noonion
 # override via DAEMON_ARGS, add proxy=127.0.0.1:9050 (clearnet+onion).
