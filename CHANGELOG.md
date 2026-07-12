@@ -12,7 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Tor obfs4 bridge support** (`Dockerfile`, `docker/entrypoint.sh`,
+  `README.md`, `docker-compose.yml`, `templates/jumpcoin-qt.xml`): the
+  `tor` image variant now bundles `obfs4proxy` and can route Tor
+  through obfs4 bridges instead of the public directory authorities —
+  useful when an ISP blocks Tor and bootstrap gets stuck at 30%.
+  Opt-in via the new `TOR_USE_BRIDGES` (default `false`) and multi-line
+  `TOR_BRIDGES` environment variables; bridge lines are injected into
+  `/etc/tor/torrc` at container start, so swapping bridges needs only a
+  restart, not a rebuild. Default behaviour is unchanged.
 
 ---
 

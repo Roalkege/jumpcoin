@@ -33,6 +33,7 @@ Data (blockchain, wallet, config) is persisted under the Appdata Path you config
   <Requires>Image builds are pushed to ghcr.io on every v* tag.</Requires>
 
   <Changes>
+[1.0.8] Add Tor obfs4 bridge support (TOR_USE_BRIDGES / TOR_BRIDGES) for the tor branch
 [1.0.6] Add branch selector (latest/tor) and new display/RPC variables to Unraid template
 [1.0.5] Fix x0vncserver startup flag
 [1.0.0] Initial release
@@ -55,6 +56,8 @@ Data (blockchain, wallet, config) is persisted under the Appdata Path you config
   <Config Name="Display Width"     Target="DISPLAY_WIDTH"     Default="1280"         Description="Horizontal resolution of the virtual desktop in pixels."                                                                                    Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Display Height"    Target="DISPLAY_HEIGHT"    Default="800"          Description="Vertical resolution of the virtual desktop in pixels."                                                                                      Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Extra Daemon Args" Target="DAEMON_ARGS"       Default=""             Description="Extra jumpcoin-qt arguments, e.g. -maxconnections=20 -onlynet=ipv4."                                                                       Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Tor Use Bridges"   Target="TOR_USE_BRIDGES"   Default="false"        Description="[tor branch only] Set to true to route Tor through obfs4 bridges instead of the public directory authorities. Use this if your ISP blocks Tor (bootstrap stuck at 30 percent). Requires Tor Bridges below." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Tor Bridges"       Target="TOR_BRIDGES"       Default=""             Description="[tor branch only] obfs4 bridge lines, one per line, from https://bridges.torproject.org (select obfs4). Only used when Tor Use Bridges is true. Changing these needs only a container restart, no rebuild." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
   <ExtraParams>--shm-size=256m</ExtraParams>
 
@@ -64,6 +67,6 @@ Data (blockchain, wallet, config) is persisted under the Appdata Path you config
   </Branch>
   <Branch>
     <Tag>tor</Tag>
-    <TagDescription>Bundled Tor daemon. Routes traffic through Tor automatically (clearnet+onion). Override via Extra Daemon Args.</TagDescription>
+    <TagDescription>Bundled Tor daemon. Routes traffic through Tor automatically (clearnet+onion). Override via Extra Daemon Args. Supports obfs4 bridges (Tor Use Bridges / Tor Bridges) when your ISP blocks Tor.</TagDescription>
   </Branch>
 </Container>

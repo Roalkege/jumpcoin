@@ -126,6 +126,13 @@ services:
   #     DISPLAY_DEPTH: "24"
   #     # Tor: default is clearnet + onion.  Set -onlynet=onion for onion-only.
   #     DAEMON_ARGS: "-proxy=127.0.0.1:9050"
+  #     # obfs4 bridges: use only if your ISP blocks the public Tor directory
+  #     # authorities (Tor stuck at 30%).  Get lines from
+  #     # https://bridges.torproject.org (obfs4).  See README "Tor bridges".
+  #     # TOR_USE_BRIDGES: "true"
+  #     # TOR_BRIDGES: |
+  #     #   obfs4 192.0.2.1:443 0123456789ABCDEF0123456789ABCDEF01234567 cert=abc...abc iat-mode=0
+  #     #   obfs4 198.51.100.2:9001 FEDCBA9876543210FEDCBA9876543210FEDCBA98 cert=def...def iat-mode=1
   #
   #   shm_size: "1g"
   #
