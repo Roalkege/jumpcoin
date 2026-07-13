@@ -16,6 +16,18 @@ Nothing yet.
 
 ---
 
+## [1.0.8] - 2026-07-13
+
+### Fixed
+
+- **Tor bootstrap on the `:tor` image** (`Dockerfile`): install Tor from the
+  signed official Tor Project package repository instead of Ubuntu 22.04's
+  unsupported Tor 0.4.6.10 package.  The image now receives the supported Tor
+  client and current directory metadata needed to bootstrap and establish
+  proxied Jumpcoin peer connections.
+
+---
+
 ## [1.0.7] - 2026-06-20
 
 ### Fixed
@@ -239,7 +251,8 @@ exist here only for reference.
 
 ---
 
-[Unreleased]: https://github.com/Roalkege/jumpcoin/compare/v1.0.7...HEAD
+[Unreleased]: https://github.com/Roalkege/jumpcoin/compare/v1.0.8...HEAD
+[1.0.8]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.8
 [1.0.7]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.7
 [1.0.6]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.6
 [1.0.0]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.0

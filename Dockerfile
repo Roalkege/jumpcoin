@@ -100,6 +100,7 @@ FROM ubuntu:${UBUNTU_VERSION} AS runtime
 ARG DEBIAN_FRONTEND=noninteractive
 ARG NOVNC_VERSION=1.5.0
 ARG WEBSOCKIFY_VERSION=0.12.0
+ARG TOR_DIST=jammy
 # WITH_TOR=true bundles the Tor daemon into the image and starts it
 # under supervisord.  The wallet then reaches onion peers through the
 # bundled SOCKS5 proxy at 127.0.0.1:9050.  Combined with the
@@ -129,6 +130,7 @@ ENV HOME=/home/jumpcoin \
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
+        gnupg \
         supervisor \
         xvfb \
         xauth \
@@ -188,11 +190,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         imagemagick \
     && rm -rf /var/lib/apt/lists/*
 
-# Optional Tor daemon.  Only installed when the image is built with
+# Optional Tor daemon. Only installed when the image is built with
 # WITH_TOR=true (e.g. the :tor tag); the :latest tag stays slim.
+#
+# Ubuntu 22.04 ships Tor 0.4.6, which has been end-of-life since 2022 and
+# can no longer bootstrap reliably against the current directory consensus.
+# Use the Tor Project's signed package repository so :tor images contain a
+# supported client and receive its current directory/fallback metadata.
 RUN if [ "$WITH_TOR" = "true" ]; then \
-        apt-get update && apt-get install -y --no-install-recommends \
+        curl -fsSL https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc \
+            | gpg --dearmor -o /usr/share/keyrings/deb.torproject.org-keyring.gpg \
+        && echo "deb [signed-by=/usr/share/keyrings/deb.torproject.org-keyring.gpg] https://deb.torproject.org/torproject.org ${TOR_DIST} main" \
+            > /etc/apt/sources.list.d/torproject.list \
+        && apt-get update && apt-get install -y --no-install-recommends \
             tor \
+            deb.torproject.org-keyring \
             torsocks \
         && rm -rf /var/lib/apt/lists/* ; \
     fi
