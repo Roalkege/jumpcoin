@@ -16,7 +16,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/roalkege/jumpcoin:latest
+      args:
+        WITH_TOR: "true"
+    image: ghcr.io/roalkege/jumpcoin:tor
     container_name: jumpcoin-qt
     restart: unless-stopped
 
@@ -61,6 +63,7 @@ services:
       DISPLAY_WIDTH: "1280"
       DISPLAY_HEIGHT: "800"
       DISPLAY_DEPTH: "24"
+      DAEMON_ARGS: "-proxy=127.0.0.1:9050 -onlynet=onion"
       # VNC_PASSWORD: "set-me-please"  # uncomment + change to enable VNC auth
       # DAEMON_ARGS: "maxconnections=20 onlynet=ipv4"   # extra jumpcoind args
       #

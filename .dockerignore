@@ -3,6 +3,10 @@
 .gitignore
 .gitattributes
 .dockerignore
+.github
+.agents
+.claude
+.tx
 .idea
 .vscode
 .docker
@@ -46,6 +50,7 @@ docker-compose.yml
 .DS_Store
 out
 dist
+templates/
 
 # Local peers.dat (mounted read-only into the container, never commit
 # the binary blob; users should supply their own bootstrap peers.dat)
@@ -54,4 +59,3 @@ gui-screenshot.png
 
 # Local wallet/blockchain data (host bind mount, not part of the image)
 data/
-

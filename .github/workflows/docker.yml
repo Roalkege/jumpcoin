@@ -17,22 +17,6 @@ jobs:
       contents: read       # checkout
       packages: write      # push to ghcr.io
       actions: write       # write GHA layer cache
-    strategy:
-      fail-fast: false
-      # Keep resource-heavy image builds sequential on hosted runners.
-      max-parallel: 1
-      matrix:
-        include:
-          - variant: standard
-            with_tor: "false"
-            tag_suffix: ""
-            cache_tag: buildcache
-            description: "Standard image (no Tor)"
-          - variant: tor
-            with_tor: "true"
-            tag_suffix: "-tor"
-            cache_tag: buildcache-tor
-            description: "Image with bundled Tor daemon"
     env:
       # OCI registries require lowercase repository names.  The
       # GitHub owner may have mixed case (e.g. 'Roalkege'), so we
@@ -42,9 +26,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -58,7 +39,6 @@ jobs:
 
       - name: Extract metadata (standard tag set)
         id: meta-standard
-        if: matrix.variant == 'standard'
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin
@@ -73,7 +53,6 @@ jobs:
       # so users can pin a major/minor without the SHA.
       - name: Extract metadata (tor tag set)
         id: meta-tor
-        if: matrix.variant == 'tor'
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ env.REGISTRY_OWNER }}/jumpcoin
@@ -82,15 +61,34 @@ jobs:
             type=semver,pattern={{version}},suffix=-tor
             type=sha,format=short,suffix=-tor
 
-      - name: Build and push (${{ matrix.description }})
+      # Build both variants on the same runner.  The expensive builder stage
+      # (Berkeley DB + Jumpcoin compilation) is identical, so BuildKit can
+      # reuse it directly for the Tor build instead of compiling it twice on
+      # two isolated matrix runners.
+      - name: Build and push standard image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64
           push: true
-          build-args: WITH_TOR=${{ matrix.with_tor }}
-          tags: ${{ matrix.variant == 'standard' && steps.meta-standard.outputs.tags || steps.meta-tor.outputs.tags }}
-          labels: ${{ matrix.variant == 'standard' && steps.meta-standard.outputs.labels || steps.meta-tor.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.variant }}
-          cache-to: type=gha,scope=${{ matrix.variant }},mode=max
+          build-args: WITH_TOR=false
+          tags: ${{ steps.meta-standard.outputs.tags }}
+          labels: ${{ steps.meta-standard.outputs.labels }}
+          cache-from: type=gha,scope=standard
+          cache-to: type=gha,scope=standard,mode=max
+
+      - name: Build and push Tor image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          push: true
+          build-args: WITH_TOR=true
+          tags: ${{ steps.meta-tor.outputs.tags }}
+          labels: ${{ steps.meta-tor.outputs.labels }}
+          cache-from: |
+            type=gha,scope=tor
+            type=gha,scope=standard
+          cache-to: type=gha,scope=tor,mode=max

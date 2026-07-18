@@ -16,6 +16,35 @@ Nothing yet.
 
 ---
 
+## [1.0.9] - 2026-07-18
+
+### Added
+
+- **Persistent Tor v3 onion service** (`src/torcontrol.cpp`): the Tor image now
+  requests an `ED25519-V3` service, stores its identity in
+  `onion_v3_private_key`, and logs the stable 56-character bootstrap address.
+- **Tor-aware wallet start guard** (`docker/start-jumpcoin-qt.sh`): wait for
+  the Tor control cookie before starting the wallet to avoid a startup race.
+
+### Fixed
+
+- **Automatic onion service creation** (`Dockerfile`, `docker/torrc`): grant
+  the unprivileged wallet process group-readable access to Tor's control cookie
+  and data directory, allowing SAFECOOKIE authentication after every restart.
+- **Tor-only Compose configuration** (`docker-compose.yml`): build and run the
+  Tor variant with IPv4 and IPv6 peer networks disabled.
+
+### Changed
+
+- **Faster release builds** (`.github/workflows/docker.yml`): build the standard
+  and Tor images on one runner so the expensive Berkeley DB and Jumpcoin
+  compilation stage is reused. Remove unnecessary QEMU setup and share the
+  standard cache with the Tor build.
+- Exclude CI, agent, translation-service, and deployment metadata from the
+  Docker build context so unrelated changes do not invalidate builder layers.
+
+---
+
 ## [1.0.8] - 2026-07-13
 
 ### Fixed
@@ -251,7 +280,8 @@ exist here only for reference.
 
 ---
 
-[Unreleased]: https://github.com/Roalkege/jumpcoin/compare/v1.0.8...HEAD
+[Unreleased]: https://github.com/Roalkege/jumpcoin/compare/v1.0.9...HEAD
+[1.0.9]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.9
 [1.0.8]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.8
 [1.0.7]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.7
 [1.0.6]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.6

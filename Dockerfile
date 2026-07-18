@@ -239,11 +239,15 @@ RUN mkdir -p /usr/local/bin \
 # Container layout
 RUN groupadd -g 1000 jumpcoin \
     && useradd -u 1000 -g jumpcoin -m -d /home/jumpcoin -s /bin/bash jumpcoin \
+    && if getent group debian-tor >/dev/null 2>&1; then \
+           usermod -a -G debian-tor jumpcoin; \
+       fi \
     && mkdir -p /home/jumpcoin/.jumpcoin /var/log/supervisor /var/run \
     && chown -R jumpcoin:jumpcoin /home/jumpcoin
 
 COPY docker/entrypoint.sh    /usr/local/bin/entrypoint.sh
 COPY docker/start-vnc.sh     /usr/local/bin/start-vnc
+COPY docker/start-jumpcoin-qt.sh /usr/local/bin/start-jumpcoin-qt
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 COPY docker/menu.xml         /etc/xdg/openbox/menu.xml
 COPY docker/launch-jumpcoin-qt.sh /usr/local/bin/launch-jumpcoin-qt
@@ -261,9 +265,9 @@ RUN if [ "$WITH_TOR" = "true" ]; then \
         && chown -R debian-tor:debian-tor /var/lib/tor /var/log/tor ; \
     fi
 
-RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/start-vnc /usr/local/bin/launch-jumpcoin-qt \
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/start-vnc /usr/local/bin/start-jumpcoin-qt /usr/local/bin/launch-jumpcoin-qt \
         /etc/supervisor/supervisord.conf \
-    && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/start-vnc /usr/local/bin/launch-jumpcoin-qt
+    && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/start-vnc /usr/local/bin/start-jumpcoin-qt /usr/local/bin/launch-jumpcoin-qt
 
 EXPOSE 6080 5900 31240 31242
 

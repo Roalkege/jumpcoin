@@ -440,14 +440,24 @@ void TorController::add_onion_cb(TorControlConnection& conn, const TorControlRep
             if ((i = m.find("PrivateKey")) != m.end())
                 private_key = i->second;
         }
-        service = LookupNumeric(std::string(service_id+".onion").c_str(), GetListenPort());
-        LogPrintf("tor: Got service ID %s, advertising service %s\n", service_id, service.ToString());
+        const std::string onion_address = service_id + ".onion";
+        service = LookupNumeric(onion_address.c_str(), GetListenPort());
+        LogPrintf("tor: Got service ID %s, onion service %s:%i\n",
+                  service_id, onion_address, GetListenPort());
         if (WriteBinaryFile(GetPrivateKeyFile(), private_key)) {
             LogPrint("tor", "tor: Cached service private key to %s\n", GetPrivateKeyFile());
         } else {
             LogPrintf("tor: Error writing service private key to %s\n", GetPrivateKeyFile());
         }
-        AddLocal(service, LOCAL_MANUAL);
+        // This legacy codebase predates BIP155/addrv2, so its CNetAddr wire
+        // representation cannot advertise a 56-character Tor v3 address to
+        // peers. Direct -addnode/-connect v3 hostnames still work through the
+        // SOCKS5 name proxy.
+        if (service.IsValid())
+            AddLocal(service, LOCAL_MANUAL);
+        else
+            LogPrintf("tor: Onion v3 service is ready; use %s:%i as a bootstrap peer\n",
+                      onion_address, GetListenPort());
         // ... onion requested - keep connection open
     } else if (reply.code == 510) { // 510 Unrecognized command
         LogPrintf("tor: Add onion failed with unrecognized command (You probably need to upgrade Tor)\n");
@@ -471,8 +481,8 @@ void TorController::auth_cb(TorControlConnection& conn, const TorControlReply& r
         }
 
         // Finally - now create the service
-        if (private_key.empty()) // No private key, generate one
-            private_key = "NEW:RSA1024"; // Explicitly request RSA1024 - see issue #9214
+        if (private_key.empty()) // No private key, generate a Tor v3 service
+            private_key = "NEW:ED25519-V3";
         // Request hidden service, redirect port.
         // Note that the 'virtual' port doesn't have to be the same as our internal port, but this is just a convenient
         // choice.  TODO; refactor the shutdown sequence some day.
@@ -654,7 +664,7 @@ void TorController::Reconnect()
 
 std::string TorController::GetPrivateKeyFile()
 {
-    return (GetDataDir() / "onion_private_key").string();
+    return (GetDataDir() / "onion_v3_private_key").string();
 }
 
 void TorController::reconnect_cb(evutil_socket_t fd, short what, void *arg)
@@ -707,4 +717,3 @@ void StopTorControl()
         base = 0;
     }
 }
-

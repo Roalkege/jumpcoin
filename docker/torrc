@@ -14,7 +14,13 @@
 SocksPort 127.0.0.1:9050 IsolateClientProtocol IsolateClientAddr
 ControlPort 127.0.0.1:9051
 CookieAuthentication 1
+# Jumpcoin runs as the unprivileged "jumpcoin" user.  The Tor image adds that
+# user to the debian-tor group so it can authenticate to the control port and
+# create its v3 onion service automatically.
+CookieAuthFile /var/lib/tor/control_auth_cookie
+CookieAuthFileGroupReadable 1
 DataDirectory /var/lib/tor
+DataDirectoryGroupReadable 1
 
 # Avoid log noise on stdout (we already have supervisor capturing
 # the process); uncomment for debugging.

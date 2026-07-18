@@ -141,6 +141,15 @@ How to verify Tor is working: open the VNC wallet, go to
 a few "onion" entries in the peer list.  From the host you can also
 check the tor process is running:
 
+The Tor image automatically creates a persistent Tor v3 onion service for
+incoming P2P connections.  Its address is logged as `tor: Got service ID ...`
+and its private key is stored as `onion_v3_private_key` in the wallet data
+directory.  The bundled Jumpcoin 13 peer protocol predates BIP155/addrv2, so
+v3 addresses cannot be learned through legacy peer-address gossip.  At least
+one known v3 address must be supplied with `-addnode=<address>.onion:31242` to
+bootstrap an onion-only node; subsequent direct connections remain entirely
+inside Tor.
+
 ```sh
 docker exec jumpcoin-qt pgrep -af tor
 ```
