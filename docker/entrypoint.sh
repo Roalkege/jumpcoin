@@ -9,6 +9,8 @@ DATA_DIR="/home/jumpcoin/.jumpcoin"
 CONF_FILE="${DATA_DIR}/jumpcoin.conf"
 VNC_PASSWD_FILE="/home/jumpcoin/.vnc/passwd"
 SUPERVISORD_CONF="/etc/supervisor/supervisord.conf"
+TOR_BOOTSTRAP_FILE="/etc/jumpcoin/tor-bootstrap-peers"
+CLEARNET_BOOTSTRAP_FILE="/etc/jumpcoin/clearnet-bootstrap-peers"
 
 log() { printf '[entrypoint] %s\n' "$*"; }
 
@@ -112,6 +114,66 @@ if [[ -n "${DAEMON_ARGS}" ]]; then
         chown jumpcoin:jumpcoin "${CONF_FILE}"
     else
         log "WARNING: DAEMON_ARGS already applied to ${CONF_FILE} — changes are ignored until the data dir is reset"
+    fi
+fi
+
+# Add the image's current Tor v3 bootstrap peers even when jumpcoin.conf
+# already exists.  This lets upgraded onion-only nodes discover the network
+# without deleting their persistent configuration.  Users can opt out with
+# TOR_BOOTSTRAP_ENABLED=false.
+if [[ -x /usr/bin/tor ]] \
+    && [[ "${TOR_BOOTSTRAP_ENABLED:-true}" != "false" ]] \
+    && [[ -r "${TOR_BOOTSTRAP_FILE}" ]]; then
+    _bootstrap_changed=false
+    while IFS= read -r _peer || [[ -n "${_peer}" ]]; do
+        case "${_peer}" in
+            ""|\#*) continue ;;
+        esac
+        if [[ ! "${_peer}" =~ ^[a-z2-7]{56}\.onion:[0-9]{1,5}$ ]]; then
+            log "WARNING: ignoring invalid Tor bootstrap peer: ${_peer}"
+            continue
+        fi
+        if ! grep -Fqx "addnode=${_peer}" "${CONF_FILE}"; then
+            log "Adding Tor bootstrap peer: ${_peer}"
+            if [[ "${_bootstrap_changed}" == "false" ]]; then
+                printf '\n# Bundled Tor v3 bootstrap peers:\n' >> "${CONF_FILE}"
+            fi
+            printf 'addnode=%s\n' "${_peer}" >> "${CONF_FILE}"
+            _bootstrap_changed=true
+        fi
+    done < "${TOR_BOOTSTRAP_FILE}"
+    if [[ "${_bootstrap_changed}" == "true" ]]; then
+        chown jumpcoin:jumpcoin "${CONF_FILE}"
+    fi
+fi
+
+# Add stable clearnet peers to standard and mixed-network nodes.  Skip this
+# list for strict onion-only configurations so they never reach a clearnet
+# destination through a Tor exit.  Users can opt out independently from the
+# Tor bootstrap list.
+if [[ "${CLEARNET_BOOTSTRAP_ENABLED:-true}" != "false" ]] \
+    && [[ -r "${CLEARNET_BOOTSTRAP_FILE}" ]] \
+    && ! grep -Eq '^onlynet=(onion|tor)$' "${CONF_FILE}"; then
+    _bootstrap_changed=false
+    while IFS= read -r _peer || [[ -n "${_peer}" ]]; do
+        case "${_peer}" in
+            ""|\#*) continue ;;
+        esac
+        if [[ ! "${_peer}" =~ ^[a-zA-Z0-9.-]+:[0-9]{1,5}$ ]]; then
+            log "WARNING: ignoring invalid clearnet bootstrap peer: ${_peer}"
+            continue
+        fi
+        if ! grep -Fqx "addnode=${_peer}" "${CONF_FILE}"; then
+            log "Adding clearnet bootstrap peer: ${_peer}"
+            if [[ "${_bootstrap_changed}" == "false" ]]; then
+                printf '\n# Bundled clearnet bootstrap peers:\n' >> "${CONF_FILE}"
+            fi
+            printf 'addnode=%s\n' "${_peer}" >> "${CONF_FILE}"
+            _bootstrap_changed=true
+        fi
+    done < "${CLEARNET_BOOTSTRAP_FILE}"
+    if [[ "${_bootstrap_changed}" == "true" ]]; then
+        chown jumpcoin:jumpcoin "${CONF_FILE}"
     fi
 fi
 

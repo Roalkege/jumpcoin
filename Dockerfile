@@ -124,6 +124,8 @@ ENV HOME=/home/jumpcoin \
     WALLET_RPCALLOWIP=0.0.0.0/0 \
     VNC_SECURITY_TYPES=VncAuth \
     DAEMON_ARGS= \
+    TOR_BOOTSTRAP_ENABLED=true \
+    CLEARNET_BOOTSTRAP_ENABLED=true \
     TOR_SOCKS_PORT=9050 \
     TOR_CONTROL_PORT=9051
 
@@ -251,6 +253,8 @@ COPY docker/start-jumpcoin-qt.sh /usr/local/bin/start-jumpcoin-qt
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 COPY docker/menu.xml         /etc/xdg/openbox/menu.xml
 COPY docker/launch-jumpcoin-qt.sh /usr/local/bin/launch-jumpcoin-qt
+COPY docker/tor-bootstrap-peers.txt /etc/jumpcoin/tor-bootstrap-peers
+COPY docker/clearnet-bootstrap-peers.txt /etc/jumpcoin/clearnet-bootstrap-peers
 
 # Tor config is only relevant in the :tor variant; the file is still
 # copied unconditionally so the runtime image is identical between

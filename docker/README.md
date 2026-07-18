@@ -99,6 +99,8 @@ All knobs live as environment variables in `docker-compose.yml`:
 | `DISPLAY_DEPTH`    | `24`          |                                           |
 | `VNC_PASSWORD`     | _(unset)_     | Set to require VNC auth                   |
 | `DAEMON_ARGS`      | _(unset)_     | Extra `jumpcoind` CLI args, e.g. pruning  |
+| `TOR_BOOTSTRAP_ENABLED` | `true`   | Add bundled Tor v3 bootstrap peers        |
+| `CLEARNET_BOOTSTRAP_ENABLED` | `true` | Add bundled clearnet bootstrap peers   |
 
 The generated `jumpcoin.conf` is written once on first start. If you want
 to start over, mount your own `jumpcoin.conf` into

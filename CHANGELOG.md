@@ -16,6 +16,20 @@ Nothing yet.
 
 ---
 
+## [1.0.10] - 2026-07-18
+
+### Added
+
+- **Automatic Tor v3 peer bootstrap** (`docker/entrypoint.sh`,
+  `docker/tor-bootstrap-peers.txt`): Tor images add the maintained server
+  bootstrap address to both new and existing `jumpcoin.conf` files.  Set
+  `TOR_BOOTSTRAP_ENABLED=false` to opt out.
+- **24/7 clearnet bootstrap** (`docker/clearnet-bootstrap-peers.txt`): standard
+  and mixed-network nodes add `explorer.jumpcoin.net:31242`, verified with a
+  live Jumpcoin 13.2.0 handshake.  Strict `onlynet=onion` nodes skip it.
+
+---
+
 ## [1.0.9] - 2026-07-18
 
 ### Added
@@ -280,7 +294,8 @@ exist here only for reference.
 
 ---
 
-[Unreleased]: https://github.com/Roalkege/jumpcoin/compare/v1.0.9...HEAD
+[Unreleased]: https://github.com/Roalkege/jumpcoin/compare/v1.0.10...HEAD
+[1.0.10]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.10
 [1.0.9]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.9
 [1.0.8]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.8
 [1.0.7]: https://github.com/Roalkege/jumpcoin/releases/tag/v1.0.7

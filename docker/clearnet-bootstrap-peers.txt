@@ -1,0 +1,3 @@
+# Stable Jumpcoin clearnet bootstrap peers.
+# One <hostname-or-ip>:<p2p-port> entry per line.
+explorer.jumpcoin.net:31242

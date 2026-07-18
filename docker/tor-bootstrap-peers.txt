@@ -1,0 +1,3 @@
+# Stable Jumpcoin Tor v3 bootstrap peers.
+# One <56-character-service-id>.onion:<p2p-port> entry per line.
+egyuj5onwbpfxrelonopc56ejsnimzeq32cnrdqb6xwocfarqf7cmkad.onion:31242
